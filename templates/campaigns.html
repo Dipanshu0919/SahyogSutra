@@ -1,0 +1,110 @@
+{% if viewyourevents %}
+    <button class="cta" onclick="location.reload();" style="width:100%">{{ translate("View All Events") }}</button><br><br>
+{% endif %}
+<button id="backToAllBtn" class="cta" style="display: none;">{{ translate("Back to All Categories") }}</button>
+
+{% for category_name, events in allevents.items() %}
+    {% set viewevents = [] %}
+    {% if viewyourevents %}
+        {% for event in events %}
+            {% if event.username == viewuserevent %}
+                {% set _ = viewevents.append(event) %}
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        {% set viewevents = events %}
+    {% endif %}
+
+    {% if viewevents %}
+        <div class="campaign-category-wrapper" data-category-id="{{ category_name|replace(' ', '-')|lower }}">
+            <h3>{{ translate(category_name) }} ( {{ viewevents|length }} )</h3>
+
+            <div class="controls-container">
+                <div class="search-wrapper">
+                    <input type="search" id="searchInput-{{ category_name|replace(' ', '-') }}" placeholder="{{ translate('Search campaigns in this category...') }}" onkeyup="filterCampaigns(this)" />
+                </div>
+                <div class="sort-wrapper">
+                    <form>
+                        <select name="sort" id="sortSelect-{{ category_name|replace(' ', '-') }}" onchange="sendsortreq(this.value)">
+                            <option value="enddate" {% if sortby=="enddate" %} selected {% endif %}>{{ translate("Sort by End Date") }}</option>
+                            <option value="eventdate" {% if sortby=="eventdate" %} selected {% endif %}>{{ translate("Sort by Start Date") }}</option>
+                            <option value="eventname" {% if sortby=="eventname" %} selected {% endif %}>{{ translate("Sort by Name") }}</option>
+                            <option value="eventid" {% if sortby=="eventid" %} selected {% endif %}>{{ translate("Sort by Event ID") }}</option>
+                            <option value="location" {% if sortby=="location" %} selected {% endif %}>{{ translate("Sort by Location") }}</option>
+                            <option value="starttime" {% if sortby=="starttime" %} selected {% endif %}>{{ translate("Sort by Start Time") }}</option>
+                            <option value="endtime" {% if sortby=="endtime" %} selected {% endif %}>{{ translate("Sort by End Time") }}</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            <div class="campaign-grid">
+                {% for e in viewevents|sort(attribute=sortby) %}
+                    <div class="campaign-card {% if not viewyourevents and loop.index > 3 %}hidden{% endif %}">
+                        <span class="campaign-id">#{{ e.eventid }}</span>
+                        <h4>{{ translate(e.eventname) }}</h4>
+                        {% set eventdesc = translate(e.description, save_file=False) %}
+
+                        <p id="event-desc-wrapper-{{e.eventid}}">
+                            {% if e.description|length > 100 %}
+                                <span id="desc-short-{{e.eventid}}">{{ eventdesc[:100] }}...</span>
+                                <span id="desc-full-{{e.eventid}}" style="display:none">{{ eventdesc }}</span>
+                                <button id="read-more-btn-{{e.eventid}}" class="read-more-btn" onclick="toggleDescription({{e.eventid}}, 'more')">{{ translate("Read More") }}</button>
+                                <button id="read-less-btn-{{e.eventid}}" class="read-more-btn" style="display:none" onclick="toggleDescription({{e.eventid}}, 'less')">{{ translate("Read Less") }}</button>
+                            {% else %}
+                                {{ eventdesc }}
+                            {% endif %}
+                        </p>
+
+                        {% set eventstartdate = e.eventdate|datetimeformat %}
+                        {% set eventenddate = e.enddate|datetimeformat %}
+                        <p><b>{{ translate("From Date and Time:") }}</b> {{ translate(eventstartdate) }} | {{ e.starttime }}<br><b>{{ translate("Till Date and Time:") }}</b> {{ translate(eventenddate) }} | {{ e.endtime }}</p>
+                        <p><b>{{ translate("Location:") }}</b> {{ translate(e.location) }}</p>
+
+                        <div class="card-footer">
+                            {% if c_user == "None" %}
+                                {% set loginalertmsg = translate("Login to like this event.") %}
+                                <button id="likeevent-{{e.eventid}}" class="like-btn" onclick="showAlert('{{ loginalertmsg }}', 'warning')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                </button>
+                            {% else %}
+                                {% set userliked = userdetails['likes'].split(",") if userdetails['likes'] else [] %}
+                                {% if e.eventid|string in userliked %}
+                                    <button id="likeevent-{{e.eventid}}" class="like-btn liked" onclick="changelike({{e.eventid}}, 'remove')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                        </svg>
+                                    </button>
+                                {% else %}
+                                    <button id="likeevent-{{e.eventid}}" class="like-btn" onclick="changelike({{e.eventid}}, 'add')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                        </svg>
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                            <span id="eventlike-{{e.eventid}}" class="like-count">{{ e.likes }}</span>
+
+                            <button class="campaign-tag" onclick="openeventchat({{ e.eventid }})">{{ translate('Open chat for this event') }}</button>
+                            <button class="campaign-tag" onclick="window.location.href='/user/{{ e.username }}'">{{ translate('Open Profile') }}</button>
+
+                            {% if e.username == c_user or isadmin %}
+                                <button onclick="asktodelete({{ e.eventid }})" class="delete-btn">{{ translate("Delete Event") }}</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if not viewyourevents and viewevents|length > 3 %}
+                <button class="cta view-all-btn" data-category-id="{{ category_name|replace(' ', '-')|lower }}">{{ translate("View All") }}</button>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endfor %}
+
+{% if viewyourevents %}
+    <button class="cta" onclick="location.reload();" style="width:100%">{{ translate("View All Events") }}</button>
+{% endif %}

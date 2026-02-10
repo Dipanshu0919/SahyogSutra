@@ -1,0 +1,77 @@
+<div class="form-container">
+    <h1>{{ translate("Create a New Campaign") }}</h1>
+    <p class="intro">
+        {{ translate("Add details for your campaign below. Once approved, it will appear in the campaign list for everyone to see.") }}
+    </p>
+    <div class="form-layout">
+        <div class="form">
+            <form id="addEventForm">
+                <div class="form-group"><input type="text" value="{{ fvalues['eventname'] }}" name="eventname" placeholder="{{ translate('Campaign Name (Max 50)') }}" maxlength="50" required /></div>
+                <div class="form-group"><input type="text" value="{{ fvalues['location'] }}" name="location" placeholder="{{ translate('Location (Max 30)') }}" maxlength="30" required /></div>
+
+                <div class="form-group">
+                    <select name="category" required>
+                        <option value="" disabled {% if not fvalues['category'] %}selected{% endif %}>{{ translate("Select a category") }}</option>
+                        <option value="Tree Plantation" {% if fvalues['category'] == 'Tree Plantation' %}selected{% endif %}>{{ translate("Tree Plantation") }}</option>
+                        <option value="Blood Donation" {% if fvalues['category'] == 'Blood Donation' %}selected{% endif %}>{{ translate("Blood Donation") }}</option>
+                        <option value="Cleanlines Drive" {% if fvalues['category'] == 'Cleanlines Drive' %}selected{% endif %}>{{ translate("Cleanlines Drive") }}</option>
+                    </select>
+                </div>
+                <div class="form-group form-row-horizontal">
+                    <div class="form-half">
+                        <label for="eventdate">{{ translate("Start Date") }}</label>
+                        <input id="eventdate" type="date" value="{{fvalues['eventdate']}}" name="eventdate" required />
+                    </div>
+                    <div class="form-half">
+                        <label for="enddate">{{ translate("End Date") }}</label>
+                        <input id="enddate" type="date" value="{{fvalues['enddate']}}" name="enddate" required />
+                    </div>
+                </div>
+                <div class="form-group form-row-horizontal">
+                    <div class="form-half">
+                        <label for="starttime">{{ translate("Start Time") }}</label>
+                        <input id="starttime" type="time" value="{{fvalues['starttime']}}" name="starttime" required />
+                    </div>
+                    <div class="form-half">
+                        <label for="endtime">{{ translate("End Time") }}</label>
+                        <input id="endtime" type="time" value="{{fvalues['endtime']}}" name="endtime" required />
+                    </div>
+                </div>
+
+                <!-- AI Button -->
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+                    <p class="ai-hint">{{ translate("Need help crafting a description? Use our AI generator!") }}ㅤㅤㅤ</p>
+                    <button type="button" class="ai-gen-btn" id="aiBtn" onclick="generateDescription()">
+                        ✨ {{ translate("Generate description from ai") }}
+                    </button>
+                </div>
+
+                <!-- AI Results Container -->
+                <h4 id="aiInstruction" style="text-align:center; margin: 10px 0; display:none; color:white;">
+{{ translate("Click any option below to auto-fill the description") }}
+</h4>
+
+<div id="aiResults" class="ai-options-container">
+<!-- Options will be injected via JS -->
+</div>
+
+                <!-- Description Field moved to bottom -->
+                <div class="form-group"><textarea id="descriptionField" name="description" placeholder="{{ translate('Description (Max 500)') }}" maxlength="500" rows="3" required>{{ fvalues['description'] }}</textarea></div>
+
+                <div class="form-buttons">
+                    <button type="submit" class="submit-btn">{{ translate("Submit Campaign") }}</button>
+                    <button type="reset" class="reset-btn">{{ translate("Reset") }}</button>
+                </div>
+            </form>
+        </div>
+        <div class="form-sidebar">
+            <h3>{{ translate("Tips for Success") }}</h3>
+            <ul>
+                <li>{{ translate("Use clear, concise titles.") }}</li>
+                <li>{{ translate("Add the location or place id for clarity.") }}</li>
+                <li>{{ translate("Choose the correct category.") }}</li>
+                <li>{{ translate("Short descriptions work best!") }}</li>
+            </ul>
+        </div>
+    </div>
+</div>

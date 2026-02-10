@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>User Profile | DEcoCamp</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+    :root { --primary-color: #3b82f6; --primary-hover: #2563eb; --bg-dark: #0f172a; --bg-light: #1e293b; --text-color: #f1f5f9; --text-muted: #94a3b8; --border-color: rgba(148,163,184,0.2); --success-color: #22c55e; --danger-color: #ef4444; --danger-hover: #dc2626; --radius: 12px; --max-width: 1500px; --ease: cubic-bezier(.2,.9,.3,1); --ai-gradient: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter',sans-serif; background: var(--bg-dark); color: var(--text-color); line-height: 1.6; overflow-x: hidden; }
+    .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(15,23,42,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); padding: 0 1rem; }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; max-width: var(--max-width); margin: 0 auto; height: 70px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 20px; color: var(--text-color); text-decoration: none; }
+    .logo { width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg,var(--primary-color),#60a5fa); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+    .brand-text div:first-child { font-size: 16px; }
+    .brand-text div:last-child { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .navlink { text-decoration: none; color: var(--text-muted); padding: 8px 12px; border-radius: 8px; transition: color .2s,background .2s; font-weight: 600; font-size: 0.95rem; }
+    .navlink:hover { color: var(--text-color); background: rgba(255,255,255,0.05); }
+    main { margin-top: 100px; padding: 0 1rem; padding-bottom: 4rem; min-height: 80vh; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .btn { display: inline-block; padding: 10px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: .2s; cursor: pointer; border: none; font-size: 0.95rem; }
+    .btn-primary { background: var(--primary-color); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-color); }
+    .btn-outline:hover { background: var(--bg-light); border-color: var(--text-muted); }
+    .profile-card { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden; animation: fadeIn 0.5s ease-out; }
+    .profile-banner { height: 150px; background: linear-gradient(135deg, var(--bg-dark), #1e293b); position: relative; border-bottom: 1px solid var(--border-color); }
+    .profile-content { padding: 0 2rem 2rem; position: relative; text-align: center; }
+    .profile-avatar { width: 120px; height: 120px; background: var(--ai-gradient); border-radius: 50%; border: 6px solid var(--bg-light); margin: -60px auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 800; color: white; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .profile-name { font-size: 2rem; margin-bottom: 0.25rem; color: var(--text-color); }
+    .profile-username { color: var(--primary-color); font-size: 1.1rem; margin-bottom: 2rem; font-weight: 500; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-box { background: var(--bg-dark); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border-color); }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--text-color); display: block; margin-bottom: 0.5rem; }
+    .stat-label { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.95rem; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { font-weight: 600; }
+    .detail-value { color: var(--text-color); }
+    button.detail-value { background: none; border: none; color: var(--primary-color); cursor: pointer; padding: 0; font-family: inherit; font-size: 0.95rem; font-weight: 600; text-decoration: none; transition: color 0.2s; }
+    button.detail-value:hover { color: var(--primary-hover); text-decoration: underline; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 600px) { .profile-name { font-size: 1.5rem; } .nav-inner { justify-content: center; } .nav-links-container { display: none; } }
+</style>
+</head>
+<body>
+
+<header class="navbar">
+    <div class="nav-inner">
+        <a href="/" class="brand">
+            <div class="logo">EC</div>
+            <div class="brand-text">
+                <div>{{ translate("DEcoCamp") }}</div>
+                <div>{{ translate("A Greener Tomorrow!") }}</div>
+            </div>
+        </a>
+        <div class="nav-links-container">
+            <a href="/" class="navlink">{{ translate("← Back to Home") }}</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="profile-card">
+            <div class="profile-banner"></div>
+
+            <div class="profile-content">
+                <div class="profile-avatar">
+                    {{ userdetails['name'][0] | upper if userdetails['name'] else 'U' }}
+                </div>
+
+                <h1 class="profile-name">{{ translate(userdetails['name']) }}</h1>
+                <div class="profile-username">@{{ userdetails['username'] }}</div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        {% set event_list = userdetails['events'].split(',') if userdetails['events'] else [] %}
+                        {% set event_count = event_list | length if userdetails['events'] else 0 %}
+                        <span class="stat-value">{{ event_count }}</span>
+                        <span class="stat-label">{{ translate ("Events Created") }} </span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value">{{ userdetails['role'][0] | upper }}{{ userdetails["role"][1:] }}</span>
+                        <span class="stat-label">{{ translate("Account Role") }}</span>
+                    </div>
+                </div>
+
+                <div class="stat-box" style="text-align: left; padding: 0;">
+                    <div class="detail-row">
+                        <span class="detail-label">{{ translate("Email Address") }}</span>
+                        <span class="detail-value">{{ userdetails['email'] }}</span>
+                    </div>
+                    {% if userdetails["events"] and userdetails["events"].split(',')|length > 0 %}
+                        <div class="detail-row">
+                            <span class="detail-label">{{ translate("Campaigns") }} ( {{ userdetails["events"].split(',')|length }} )</span>
+                            {% set user_event_username = userdetails['username'] %}
+                            <button class="detail-value" onclick="viewyourevents('{{ user_event_username }}')">
+                                {{ translate("Click Here To View Events Created By Them") }}
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <a href="mailto:{{ userdetails['email'] }}" class="btn btn-primary">{{ translate("Contact User") }}</a>
+                    <a href="/" class="btn btn-outline" style="margin-left: 10px;">{{ translate("Back to Dashboard") }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function viewyourevents(username) {
+        fetch('/viewyourevents/' + username, { method: 'POST' })
+        .then(() => {
+            window.location.href = '/#campaigns';
+        });
+    }
+</script>
+
+</body>
+</html>

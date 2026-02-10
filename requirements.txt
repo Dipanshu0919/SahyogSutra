@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+python-multipart
+python-socketio
+jinja2
+itsdangerous
+sqlitecloud
+python-dotenv
+requests
+tzdata
+googletrans==3.1.0a0

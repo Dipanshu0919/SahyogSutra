@@ -1,0 +1,14 @@
+# Python virtual environments
+venv/
+env/
+.venv/
+.env/
+
+.env
+
+fortest.py
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
