@@ -1,10 +1,12 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-t" />
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>DEcoCamp — A Greener Tommorow!</title>
+<title>EcoCamp — A Greener Tommorow!</title>
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
     :root { --primary-color: #3b82f6; --primary-hover: #2563eb; --bg-dark: #0f172a; --bg-light: #1e293b; --text-color: #f1f5f9; --text-muted: #94a3b8; --border-color: rgba(148,163,184,0.2); --success-color: #22c55e; --danger-color: #ef4444; --danger-hover: #dc2626; --radius: 12px; --max-width: 1500px; --ease: cubic-bezier(.2,.9,.3,1); --ai-gradient: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); }
@@ -160,16 +162,25 @@
     .alert-action-btn:hover { background: rgba(255, 255, 255, 0.3); border-color: rgba(255, 255, 255, 0.6); }
     .alert-action-btn:active { background: rgba(255, 255, 255, 0.25); }
     @media (max-width: 768px) { nav { display: none; position: absolute; top: 70px; left: 0; right: 0; background: var(--bg-light); flex-direction: column; align-items: stretch; padding: 1rem; border-bottom: 1px solid var(--border-color); } nav.active { display: flex; } .cta { margin-left: 0; width: 100%; text-align: center; } .menu-toggle { display: block; } .home-layout, .form-layout { grid-template-columns: 1fr; } .home-hero h1 { font-size: 2rem; } .alert-bar { top: 70px; padding: 0.75rem 1rem; } .alert-content { flex-direction: column; align-items: flex-start; } .alert-close { margin-left: 0; margin-top: 0.5rem; } .ai-options-container { grid-template-columns: 1fr 1fr; } }
+
+    /* Calendar Style */
+    #calendar { background: var(--bg-light); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); max-width: 1000px; margin: 20px auto; color: var(--text-color); }
+    .fc-theme-standard td, .fc-theme-standard th { border-color: var(--border-color); }
+    .fc .fc-toolbar-title { font-size: 1.5em; font-weight: 700; color: var(--text-color); }
+    .fc .fc-button-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+    .fc .fc-button-primary:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); }
+    .fc-daygrid-day-number { color: var(--text-muted); text-decoration: none; }
+    .fc-col-header-cell-cushion { color: var(--text-color); text-decoration: none; }
 </style>
 </head>
 <body>
 
 <header class="navbar">
     <div class="nav-inner">
-        <a href="#" class="brand" title="DEcoCamp">
+        <a href="#" class="brand" title="EcoCamp">
             <div class="logo">EC</div>
             <div class="brand-text">
-                <div>{{ translate('DEcoCamp') }}</div>
+                <div>{{ translate('EcoCamp') }}</div>
                 <div>{{ translate('A Greener Tomorrow!') }}</div>
             </div>
         </a>
@@ -184,8 +195,6 @@
             <a class="navlink" href="#pending" data-section="pending">{{ translate("Pending") }}</a>
             {% endif %}
             <a class="navlink" href="#contact" data-section="contact">{{ translate("Contact") }}</a>
-
-            <!-- <button onclick="changetemplate()">Change Theme of this site</button> -->
 
             <div class="language-selector" style="position: relative;">
                 <button class="cta" id="languageBtn" style="margin: 0;">{{ translate("Change Language") }}</button>
@@ -207,7 +216,6 @@
     </div>
 </header>
 
-<!-- Custom Alert Bar -->
 <div id="alertBar" class="alert-bar">
     <div class="alert-content">
         <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1;">
@@ -221,7 +229,6 @@
     <button class="alert-close" id="alertCloseBtn" onclick="closeAlert()" title="{{ translate('Close') }}">✕</button>
 </div>
 
-<!-- GLOBAL CHAT DRAWER -->
 <div id="sideChatDrawer" class="chat-drawer">
     <div class="chat-header">
         <h3>{{ translate("Event Chat") }}</h3>
@@ -234,7 +241,7 @@
     <section id="home" class="active">
         <div class="home-layout">
             <div class="home-hero">
-                <h1>{{ translate("Hey") }} {{ translate(fullname.split()[0], save_file=False) }}, {{ translate("Welcome to DEcoCamp!") }}</h1>
+                <h1>{{ translate("Hey") }} {{ translate(fullname.split()[0], save_file=False) }}, {{ translate("Welcome to EcoCamp!") }}</h1>
                 <p>{{ translate("Join hands to protect our green planet. Start a campaign, plant hope for a brighter, cleaner tomorrow.") }}</p>
                 <div id="ndhome"></div>
 
@@ -292,11 +299,10 @@
                     <h3>{{ translate("Welcome") }}, {{ translate(fullname, save_file=False) }}!</h3>
                     <p>{{ translate("Username:") }} {{ c_user }}</p>
                     <p>{{ translate("Email:") }} {{ userdetails['email'] }}</p>
-                    {% if userdetails['events'] %}
-                        <p>{{ translate("Events: Total") }} {{ userdetails['events'].split(",") | length }} {{ translate("Events added by you.") }} </p> <button class="otp-btn" onclick="viewyourevents('{{ c_user }}')">{{ translate("Click Here To View Your Events") }}</button>
-                        {% else %} <p>{{ translate("Events by you: No event added by you yet.") }}</p> {% endif %}
-                        <div class="form-buttons">
-                        <!-- <button onclick="window.location.href='/logout';" class="reset-btn">{{ translate("Logout") }}</button> -->
+                    {% if userdetails['events'] != None %}
+                    <p>{{ translate("Events: Total") }} {{ userdetails['events'].split(",") | length }} {{ translate("Events added by you.") }} </p> <button class="otp-btn" onclick="viewyourevents('{{ c_user }}')">{{ translate("Click Here To View Your Events") }}</button>
+                    {% else %} <p>{{ translate("Events by you: No event added by you yet.") }}</p> {% endif %}
+                    <div class="form-buttons">
                         <button onclick="window.location.href='/clearsession';" class="delete-btn">{{ translate("Logout") }}</button>
                     </div>
                 {% endif %}
@@ -310,6 +316,10 @@
                     <h2 id="campaignsTitle">{{ translate("Campaigns") }} ( {{ active_events_length }} )</h2>
                     <p>{{ translate("Find campaigns to join or create your own.") }}</p>
                 </div>
+                <div class="toggle-buttons">
+                     <button id="listViewBtn" class="active" onclick="toggleView('list')">List View</button>
+                     <button id="calendarViewBtn" onclick="toggleView('calendar')">Calendar View</button>
+                </div>
             </div>
 
             <div id="campaignsLoadingState" style="text-align: center; padding: 3rem;">
@@ -317,7 +327,10 @@
             </div>
 
             <div id="campaignsContent" style="display: none;">
-                <!-- Campaigns will be loaded here dynamically -->
+                </div>
+
+            <div id="calendarView" style="display: none;">
+                <div id="calendar"></div>
             </div>
         </section>
 
@@ -328,8 +341,7 @@
             </div>
 
             <div id="pendingContent" style="display: none;">
-                <!-- Pending events will be loaded here dynamically -->
-            </div>
+                </div>
             {% else %}
             <div style="text-align: center; padding: 3rem;">
                 <p style="color: var(--text-muted); font-size: 1.1rem;">{{ translate("Access denied. Admin privileges required.") }}</p>
@@ -344,8 +356,7 @@
         </div>
 
         <div id="addFormContent" style="display: none;">
-            <!-- Form will be loaded here dynamically -->
-        </div>
+            </div>
     </section>
 
     <section id="contact">
@@ -784,6 +795,77 @@
     };
 
     // ============================================
+    // CALENDAR & VIEW TOGGLE
+    // ============================================
+    let calendar;
+
+    window.toggleView = function(view) {
+        const listBtn = $('#listViewBtn');
+        const calBtn = $('#calendarViewBtn');
+        const listContent = $('#campaignsContent');
+        const calContent = $('#calendarView');
+        const loading = $('#campaignsLoadingState');
+
+        // Ensure data is loaded
+        if (!contentLoaders.campaigns.loaded) loadCampaigns();
+
+        if (view === 'list') {
+            listBtn.classList.add('active');
+            calBtn.classList.remove('active');
+            listContent.style.display = 'block';
+            calContent.style.display = 'none';
+        } else {
+            listBtn.classList.remove('active');
+            calBtn.classList.add('active');
+            listContent.style.display = 'none';
+            calContent.style.display = 'block';
+
+            if (!calendar) {
+                initCalendar();
+            } else {
+                setTimeout(() => calendar.render(), 100);
+            }
+        }
+    };
+
+    function initCalendar() {
+        const calendarEl = document.getElementById('calendar');
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listWeek'
+            },
+            events: function(info, successCallback, failureCallback) {
+                fetch('/api')
+                .then(response => response.json())
+                .then(data => {
+                    const events = data['active events'].map(e => ({
+                        title: e.eventname,
+                        start: e.eventdate + (e.starttime ? 'T' + e.starttime : ''),
+                        url: '#', // or link to specific event
+                        extendedProps: {
+                            description: e.description,
+                            location: e.location
+                        }
+                    }));
+                    successCallback(events);
+                })
+                .catch(error => {
+                    console.error('Error fetching events:', error);
+                    failureCallback(error);
+                });
+            },
+            eventClick: function(info) {
+                info.jsEvent.preventDefault();
+                showAlert(`${info.event.title}\n📍 ${info.event.extendedProps.location}\n📅 ${info.event.start.toLocaleDateString()}`, 'info');
+            }
+        });
+        calendar.render();
+    }
+
+    // ============================================
     // OTHER FUNCTIONS
     // ============================================
     window.changetemplate = () => fetch("/changetemplate").then(() => location.reload());
@@ -830,6 +912,9 @@
         // Toggle auth tabs
         $('.toggle-buttons')?.addEventListener('click', e => {
             if (e.target.tagName !== 'BUTTON') return;
+            // Check if it's the view toggle buttons (ignore them here)
+            if (e.target.id === 'listViewBtn' || e.target.id === 'calendarViewBtn') return;
+
             const isLogin = e.target.id === 'login-tab-btn';
 
             $('#login-tab-btn').classList.toggle('active', isLogin);
