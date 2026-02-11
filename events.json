@@ -1,0 +1,60 @@
+{
+    "Environment & Nature": [
+        "Tree Plantation",
+        "Cleanliness Drive",
+        "Beach / River Cleanup",
+        "Wildlife Census Walk",
+        "Composting Workshop",
+        "Rainwater Harvesting Drive",
+        "Urban Farming / Terrace Garden"
+    ],
+    "Health & Wellness": [
+        "Blood Donation",
+        "Free Medical Camp",
+        "Eye / Dental Checkup Camp",
+        "Yoga & Meditation Session",
+        "Mental Health Awareness Walk",
+        "Fitness Bootcamp"
+    ],
+    "Education & Skills": [
+        "Free Tutoring / Coaching Camp",
+        "Digital Literacy Workshop",
+        "Coding Bootcamp for Kids",
+        "Financial Literacy Seminar",
+        "Spoken English Workshop"
+    ],
+    "Community & Social": [
+        "Food Distribution Drive",
+        "Clothes Donation Camp",
+        "Old Age Home Visit",
+        "Orphanage Visit & Activity Day",
+        "Stray Animal Feeding Drive"
+    ],
+    "Arts & Culture": [
+        "Street Art / Mural Painting",
+        "Cultural Festival",
+        "Photography Walk",
+        "Open Mic / Poetry Slam",
+        "Folk Dance / Music Performance"
+    ],
+    "Civic & Awareness": [
+        "Voter Awareness Campaign",
+        "Road Safety Awareness Drive",
+        "Anti-Drug Awareness Event",
+        "Women Safety Workshop",
+        "Disaster Preparedness Drill"
+    ],
+    "Sports & Recreation": [
+        "Cricket / Football Tournament",
+        "Cycling Rally",
+        "Marathon / Fun Run",
+        "Kabaddi Tournament",
+        "Chess / Carrom Competition"
+    ],
+    "Disaster Relief": [
+        "Flood Relief Camp",
+        "Earthquake Relief Drive",
+        "Winter Clothing Drive",
+        "Wildfire Recovery Plantation"
+    ]
+}

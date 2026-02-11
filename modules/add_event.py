@@ -85,16 +85,6 @@ def addeventrequest(c, form_data: dict, session: dict):
         else:
             event_values.append(form_data.get(f))
 
-    # Check if exists in active events
-    check = c.execute("SELECT * FROM eventdetail WHERE eventname=?", (event_values[0],)).fetchone()
-    if check:
-         return "Event Already Exists"
-
-    # Check if exists in pending requests
-    check_req = c.execute("SELECT * FROM eventreq WHERE eventname=?", (event_values[0],)).fetchone()
-    if check_req:
-         return "Event Already Submitted! Please Wait For Approval"
-
     efields = ", ".join(field)
     vals = ", ".join(["?"] * len(event_values))
 

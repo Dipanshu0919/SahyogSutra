@@ -28,11 +28,11 @@
 
                     <label style="font-weight: bold; font-size: 0.8em; display:block;">Category</label>
                     <select name="category" required style="width: 100%;">
-                        <option value="Tree Plantation" {% if event.category == 'Tree Plantation' %}selected{% endif %}>Tree Plantation</option>
-                        <option value="Blood Donation" {% if event.category == 'Blood Donation' %}selected{% endif %}>Blood Donation</option>
-                        <option value="Cleanliness Drive" {% if event.category == 'Cleanliness Drive' %}selected{% endif %}>Cleanliness Drive</option>
-                        <option value="Awareness Campaign" {% if event.category == 'Awareness Campaign' %}selected{% endif %}>Awareness Campaign</option>
-                        <option value="Other" {% if event.category == 'Other' %}selected{% endif %}>Other</option>
+                        {% for name, events in categories.items() %}
+                        {% for eventname in events %}
+                        <option value="{{eventname}}" {% if event.category == eventname %}selected{% endif %}>{{ eventname }}</option>
+                        {% endfor %}
+                        {% endfor %}
                     </select>
                 </td>
                 <td style="vertical-align: top;">

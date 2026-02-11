@@ -12,11 +12,18 @@
                 <div class="form-group">
                     <select name="category" required>
                         <option value="" disabled {% if not fvalues['category'] %}selected{% endif %}>{{ translate("Select a category") }}</option>
-                        <option value="Tree Plantation" {% if fvalues['category'] == 'Tree Plantation' %}selected{% endif %}>{{ translate("Tree Plantation") }}</option>
-                        <option value="Blood Donation" {% if fvalues['category'] == 'Blood Donation' %}selected{% endif %}>{{ translate("Blood Donation") }}</option>
-                        <option value="Cleanlines Drive" {% if fvalues['category'] == 'Cleanlines Drive' %}selected{% endif %}>{{ translate("Cleanlines Drive") }}</option>
+
+                        {% for category, events in categories.items() %}
+                        <optgroup label="{{ translate(category) }}">
+                            {% for event_name in events %}
+                            <option value="{{ event_name }}" {% if fvalues['category'] == event_name %}selected{% endif %}>{{ translate(event_name) }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endfor %}
+
                     </select>
                 </div>
+
                 <div class="form-group form-row-horizontal">
                     <div class="form-half">
                         <label for="eventdate">{{ translate("Start Date") }}</label>
@@ -48,14 +55,14 @@
 
                 <!-- AI Results Container -->
                 <h4 id="aiInstruction" style="text-align:center; margin: 10px 0; display:none; color:white;">
-{{ translate("Click any option below to auto-fill the description") }}
-</h4>
+                    {{ translate("Click any option below to auto-fill the description") }}
+                </h4>
 
-<div id="aiResults" class="ai-options-container">
-<!-- Options will be injected via JS -->
-</div>
+                <div id="aiResults" class="ai-options-container">
+                    <!-- Options will be injected via JS -->
+                </div>
 
-                <!-- Description Field moved to bottom -->
+                <!-- Description Field -->
                 <div class="form-group"><textarea id="descriptionField" name="description" placeholder="{{ translate('Description (Max 500)') }}" maxlength="500" rows="3" required>{{ fvalues['description'] }}</textarea></div>
 
                 <div class="form-buttons">

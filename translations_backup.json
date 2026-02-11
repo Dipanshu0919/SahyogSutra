@@ -424,5 +424,194 @@
     },
     "Dipanshu Ashok Agarwal": {
         "hi": "दीपांशु अशोक अग्रवाल"
+    },
+    "DEcoCamp": {
+        "hi": "डेकोकैंप"
+    },
+    "Copy Link": {
+        "hi": "लिंक की प्रतिलिपि करें"
+    },
+    "Share Event": {
+        "hi": "इवेंट साझा करें"
+    },
+    "Share on WhatsApp as:": {
+        "hi": "व्हाट्सएप पर इस प्रकार साझा करें:"
+    },
+    "Text Message": {
+        "hi": "पाठ संदेश"
+    },
+    "PDF Document": {
+        "hi": "पीडीएफ दस्तावेज़"
+    },
+    "Image Card": {
+        "hi": "छवि कार्ड"
+    },
+    "Welcome to DEcoCamp!": {
+        "hi": "DEcoCamp में आपका स्वागत है!"
+    },
+    "Top Organizers": {
+        "hi": "शीर्ष आयोजक"
+    },
+    "Events": {
+        "hi": "घटनाएँ"
+    },
+    "View Profile": {
+        "hi": "प्रोफ़ाइल देखें"
+    },
+    "Link copied to clipboard!": {
+        "hi": "लिंक क्लिपबोर्ड पर कॉपी किया गया!"
+    },
+    "Generating Image, please wait...": {
+        "hi": "छवि बनाई जा रही है, कृपया प्रतीक्षा करें..."
+    },
+    "Failed to copy link.": {
+        "hi": "लिंक कॉपी करने में विफल."
+    },
+    "Environment & Nature": {
+        "hi": "पर्यावरण एवं प्रकृति"
+    },
+    "Generating PDF, please wait...": {
+        "hi": "पीडीएफ जेनरेट हो रहा है, कृपया प्रतीक्षा करें..."
+    },
+    "Wildlife Census Walk": {
+        "hi": "वन्यजीव जनगणना वॉक"
+    },
+    "Cleanliness Drive": {
+        "hi": "स्वच्छता अभियान"
+    },
+    "Beach / River Cleanup": {
+        "hi": "समुद्रतट/नदी की सफ़ाई"
+    },
+    "Composting Workshop": {
+        "hi": "खाद कार्यशाला"
+    },
+    "Health & Wellness": {
+        "hi": "स्वास्थ्य और कल्याण"
+    },
+    "Rainwater Harvesting Drive": {
+        "hi": "वर्षा जल संचयन अभियान"
+    },
+    "Free Medical Camp": {
+        "hi": "निःशुल्क चिकित्सा शिविर"
+    },
+    "Urban Farming / Terrace Garden": {
+        "hi": "शहरी खेती/टैरेस गार्डन"
+    },
+    "Yoga & Meditation Session": {
+        "hi": "योग एवं ध्यान सत्र"
+    },
+    "Mental Health Awareness Walk": {
+        "hi": "मानसिक स्वास्थ्य जागरूकता पदयात्रा"
+    },
+    "Eye / Dental Checkup Camp": {
+        "hi": "नेत्र/दंत जांच शिविर"
+    },
+    "Fitness Bootcamp": {
+        "hi": "फिटनेस बूटकैंप"
+    },
+    "Education & Skills": {
+        "hi": "शिक्षा एवं कौशल"
+    },
+    "Free Tutoring / Coaching Camp": {
+        "hi": "निःशुल्क ट्यूशन/कोचिंग शिविर"
+    },
+    "Digital Literacy Workshop": {
+        "hi": "डिजिटल साक्षरता कार्यशाला"
+    },
+    "Coding Bootcamp for Kids": {
+        "hi": "बच्चों के लिए कोडिंग बूटकैंप"
+    },
+    "Financial Literacy Seminar": {
+        "hi": "वित्तीय साक्षरता संगोष्ठी"
+    },
+    "Spoken English Workshop": {
+        "hi": "स्पोकन इंग्लिश वर्कशॉप"
+    },
+    "Community & Social": {
+        "hi": "सामुदायिक एवं सामाजिक"
+    },
+    "Food Distribution Drive": {
+        "hi": "खाद्य वितरण अभियान"
+    },
+    "Clothes Donation Camp": {
+        "hi": "वस्त्र दान शिविर"
+    },
+    "Old Age Home Visit": {
+        "hi": "वृद्धाश्रम का दौरा"
+    },
+    "Orphanage Visit & Activity Day": {
+        "hi": "अनाथालय का दौरा और गतिविधि दिवस"
+    },
+    "Arts & Culture": {
+        "hi": "कला एवं संस्कृति"
+    },
+    "Stray Animal Feeding Drive": {
+        "hi": "आवारा पशु आहार अभियान"
+    },
+    "Street Art / Mural Painting": {
+        "hi": "स्ट्रीट आर्ट/भित्तिचित्र पेंटिंग"
+    },
+    "Photography Walk": {
+        "hi": "फोटोग्राफी वॉक"
+    },
+    "Cultural Festival": {
+        "hi": "सांस्कृतिक महोत्सव"
+    },
+    "Open Mic / Poetry Slam": {
+        "hi": "ओपन माइक/पोएट्री स्लैम"
+    },
+    "Folk Dance / Music Performance": {
+        "hi": "लोक नृत्य/संगीत प्रदर्शन"
+    },
+    "Voter Awareness Campaign": {
+        "hi": "मतदाता जागरूकता अभियान"
+    },
+    "Civic & Awareness": {
+        "hi": "नागरिक एवं जागरूकता"
+    },
+    "Road Safety Awareness Drive": {
+        "hi": "सड़क सुरक्षा जागरूकता अभियान"
+    },
+    "Anti-Drug Awareness Event": {
+        "hi": "नशा विरोधी जागरूकता कार्यक्रम"
+    },
+    "Disaster Preparedness Drill": {
+        "hi": "आपदा तैयारी ड्रिल"
+    },
+    "Sports & Recreation": {
+        "hi": "खेल एवं मनोरंजन"
+    },
+    "Women Safety Workshop": {
+        "hi": "महिला सुरक्षा कार्यशाला"
+    },
+    "Cricket / Football Tournament": {
+        "hi": "क्रिकेट/फुटबॉल टूर्नामेंट"
+    },
+    "Kabaddi Tournament": {
+        "hi": "कबडडी टूर्नामेंट"
+    },
+    "Marathon / Fun Run": {
+        "hi": "मैराथन/फन रन"
+    },
+    "Cycling Rally": {
+        "hi": "साइकिल रैली"
+    },
+    "Chess / Carrom Competition": {
+        "hi": "शतरंज/कैरम प्रतियोगिता"
+    },
+    "Disaster Relief": {
+        "hi": "आपदा राहत"
+    },
+    "Earthquake Relief Drive": {
+        "hi": "भूकंप राहत अभियान"
+    },
+    "Flood Relief Camp": {
+        "hi": "बाढ़ राहत शिविर"
+    },
+    "Wildfire Recovery Plantation": {
+        "hi": "जंगल की आग से उबरने का वृक्षारोपण"
+    },
+    "Winter Clothing Drive": {
+        "hi": "शीतकालीन वस्त्र ड्राइव"
     }
 }
