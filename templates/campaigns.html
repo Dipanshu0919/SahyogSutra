@@ -46,13 +46,13 @@
                 <div class="sort-wrapper">
                     <form>
                         <select name="sort" id="sortSelect-{{ category_name|replace(' ', '-') }}" onchange="sendsortreq(this.value)">
-                            <option value="enddate" {% if sortby=="enddate" %} selected {% endif %}>{{ translate("Sort by End Date") }}</option>
-                            <option value="eventdate" {% if sortby=="eventdate" %} selected {% endif %}>{{ translate("Sort by Start Date") }}</option>
+                            <option value="eventenddate" {% if sortby=="eventenddate" %} selected {% endif %}>{{ translate("Sort by End Date") }}</option>
+                            <option value="eventstartdate" {% if sortby=="eventstartdate" %} selected {% endif %}>{{ translate("Sort by Start Date") }}</option>
                             <option value="eventname" {% if sortby=="eventname" %} selected {% endif %}>{{ translate("Sort by Name") }}</option>
                             <option value="eventid" {% if sortby=="eventid" %} selected {% endif %}>{{ translate("Sort by Event ID") }}</option>
                             <option value="location" {% if sortby=="location" %} selected {% endif %}>{{ translate("Sort by Location") }}</option>
-                            <option value="starttime" {% if sortby=="starttime" %} selected {% endif %}>{{ translate("Sort by Start Time") }}</option>
-                            <option value="endtime" {% if sortby=="endtime" %} selected {% endif %}>{{ translate("Sort by End Time") }}</option>
+                            <option value="eventstarttime" {% if sortby=="eventstarttime" %} selected {% endif %}>{{ translate("Sort by Start Time") }}</option>
+                            <option value="eventendtime" {% if sortby=="eventendtime" %} selected {% endif %}>{{ translate("Sort by End Time") }}</option>
                         </select>
                     </form>
                 </div>
@@ -76,9 +76,9 @@
                             {% endif %}
                         </p>
 
-                        {% set eventstartdate = e.eventdate|datetimeformat %}
-                        {% set eventenddate = e.enddate|datetimeformat %}
-                        <p><b>{{ translate("From Date and Time:") }}</b> {{ translate(eventstartdate) }} | {{ e.starttime }}<br><b>{{ translate("Till Date and Time:") }}</b> {{ translate(eventenddate) }} | {{ e.endtime }}</p>
+                        {% set eventstartdate = e.eventstartdate|datetimeformat %}
+                        {% set eventeventenddate = e.eventenddate|datetimeformat %}
+                        <p><b>{{ translate("From Date and Time:") }}</b> {{ translate(eventstartdate) }} | {{ e.eventstarttime }}<br><b>{{ translate("Till Date and Time:") }}</b> {{ translate(eventeventenddate) }} | {{ e.eventendtime }}</p>
 
                         <!-- Smart Map Link -->
                         <p><b>{{ translate("Location:") }}</b>
@@ -117,7 +117,7 @@
 
                             <div style="display: flex; gap: 8px; margin-left: 10px;">
                                 <!-- Enhanced Share Trigger -->
-                                <button onclick="openShareModal('{{e.eventname|e}}', '{{e.eventid}}', '{{eventstartdate}}', '{{e.starttime}}', '{{e.location|e}}', '{{e.description|e}}')" class="share-btn" title="{{ translate('Share Event') }}" style="background:none; border:none; color: var(--text-muted); cursor: pointer;">
+                                <button onclick="openShareModal('{{e.eventname|e}}', '{{e.eventid}}', '{{eventstartdate}}', '{{e.eventstarttime}}', '{{e.location|e}}', '{{e.description|e}}')" class="share-btn" title="{{ translate('Share Event') }}" style="background:none; border:none; color: var(--text-muted); cursor: pointer;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                                       <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
                                     </svg>

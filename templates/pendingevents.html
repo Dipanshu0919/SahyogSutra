@@ -1,21 +1,26 @@
+<div style="margin-left:-1rem; margin-right:-1rem;">
 <h2>Pending Event Approvals ( {{ pendingevents|length }} )</h2>
 <p>Review and approve or decline new campaign submissions. All fields are editable before approval.</p>
-<div class="table-responsive">
+<div class="table-responsive" style="width:100%">
     <table class="pending-events-table">
         <thead>
-            <tr>
-                <th>Action</th>
-                <th>Name, Location, Category</th>
-                <th>Dates & Times</th>
-                <th>Description</th>
-                <th>Submitted By</th>
-            </tr>
-        </thead>
+                    <tr>
+                        <th style="width: 1%; min-width: 80px;">Action</th>
+
+                        <th style="width: 20%;">Name, Location, Category</th>
+                        <th style="width: 18%;">Dates & Times</th>
+
+                        <th>Description</th>
+
+                        <th style="width: 15%;">Submitted By</th>
+                    </tr>
+                </thead>
         <tbody>
             {% for event in pendingevents %}
             <tr class="event-row">
                 <td style="vertical-align: top; text-align: center;">
-                    <!-- We use hidden ID for tracking, but visible inputs for data -->
+                    <label style="font-weight: bold; font-size: 0.8em; display:block; text-align: left;">Event ID</label>
+                        <input type="number" name="eventid" readonly value="{{ event.eventid }}" style="width: 100%; margin-bottom: 8px; background-color: rgba(0,0,0,0.2);">
                     <button type="button" class="action-btn approve-btn" style="margin-bottom: 8px; width: 100%;">Approve</button>
                     <button type="button" class="action-btn decline-btn" style="width: 100%;" onclick="declineEvent('{{ event.eventid }}')">Decline</button>
                 </td>
@@ -38,14 +43,14 @@
                 <td style="vertical-align: top;">
                     <label style="font-weight: bold; font-size: 0.8em; display:block;">Start</label>
                     <div style="display: flex; gap: 5px; margin-bottom: 8px;">
-                        <input type="date" name="eventdate" value="{{ event.eventdate }}" required style="width: 130px;">
-                        <input type="time" name="starttime" value="{{ event.starttime }}" required>
+                        <input type="date" name="eventstartdate" value="{{ event.eventstartdate }}" required style="width: 130px;">
+                        <input type="time" name="eventstarttime" value="{{ event.eventstarttime }}" required>
                     </div>
 
                     <label style="font-weight: bold; font-size: 0.8em; display:block;">End</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="date" name="enddate" value="{{ event.enddate }}" required style="width: 130px;">
-                        <input type="time" name="endtime" value="{{ event.endtime }}" required>
+                        <input type="date" name="eventenddate" value="{{ event.eventenddate }}" required style="width: 130px;">
+                        <input type="time" name="eventendtime" value="{{ event.eventendtime }}" required>
                     </div>
                 </td>
                 <td style="vertical-align: top;">
@@ -69,4 +74,5 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
 </div>

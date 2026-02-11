@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>DEcoCamp — A Greener Tommorow!</title>
 
-<!-- Libraries for Share Feature -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -68,7 +67,7 @@
     .campaign-id { color: var(--text-muted); font-size: .75rem; font-weight: bold; position: absolute; top: 1rem; right: 1rem; }
     .delete-btn { background: #ef4444; color: #fff; border: none; padding: 6px 12px; font-size: .8rem; border-radius: 6px; cursor: pointer; margin-top: 0; transition: background .2s; }
     .delete-btn:hover { background: #dc2626; }
-    .form-container { max-width: 120%; margin: 0 auto; background: var(--bg-light); padding: 2rem; border-radius: var(--radius); border: 1px solid var(--border-color); }
+    .form-container { max-width: 120%; margin: 0 auto; background: var(--bg-light); padding: 0.75rem; border-radius: var(--radius); border: 1px solid var(--border-color); }
     .form-container h1 { text-align: center; color: var(--text-color); }
     .form-container p.intro { text-align: center; max-width: 600px; margin: 0 auto 2rem; }
     .form-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
@@ -78,6 +77,7 @@
     .form-group label { display: block; margin-bottom: .5rem; font-weight: 600; font-size: .9rem; color: var(--text-muted); }
     .form-buttons { display: flex; gap: 1rem; margin-top: 1.5rem; }
     .submit-btn, .reset-btn { flex: 1; padding: 12px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: .2s; }
+    .submit-btn { background: var(--primary-color); color: #fff; }
     .submit-btn:hover:not(:disabled) { background: var(--primary-hover); }
     .submit-btn:disabled { background: var(--text-muted); opacity: .7; cursor: not-allowed; }
     .reset-btn { background: var(--bg-light); border: 1px solid var(--border-color); color: var(--text-color); }
@@ -166,8 +166,6 @@
     .alert-action-btn:hover { background: rgba(255, 255, 255, 0.3); border-color: rgba(255, 255, 255, 0.6); }
     .alert-action-btn:active { background: rgba(255, 255, 255, 0.25); }
     @media (max-width: 768px) { nav { display: none; position: absolute; top: 70px; left: 0; right: 0; background: var(--bg-light); flex-direction: column; align-items: stretch; padding: 1rem; border-bottom: 1px solid var(--border-color); } nav.active { display: flex; } .cta { margin-left: 0; width: 100%; text-align: center; } .menu-toggle { display: block; } .home-layout, .form-layout { grid-template-columns: 1fr; } .home-hero h1 { font-size: 2rem; } .alert-bar { top: 70px; padding: 0.75rem 1rem; } .alert-content { flex-direction: column; align-items: flex-start; } .alert-close { margin-left: 0; margin-top: 0.5rem; } .ai-options-container { grid-template-columns: 1fr 1fr; } }
-
-    /* Calendar Style */
     #calendar { background: var(--bg-light); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); max-width: 1000px; margin: 20px auto; color: var(--text-color); }
     .fc-theme-standard td, .fc-theme-standard th { border-color: var(--border-color); }
     .fc .fc-toolbar-title { font-size: 1.5em; font-weight: 700; color: var(--text-color); }
@@ -175,16 +173,12 @@
     .fc .fc-button-primary:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); }
     .fc-daygrid-day-number { color: var(--text-muted); text-decoration: none; }
     .fc-col-header-cell-cushion { color: var(--text-color); text-decoration: none; }
-
-    /* Stats & Leaderboard */
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
     .dash-card { background: var(--bg-light); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border-color); }
     .leaderboard-list { list-style: none; padding: 0; margin-top: 1rem; }
     .leaderboard-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
     .leaderboard-rank { font-weight: bold; color: var(--primary-color); width: 25px; }
     .leaderboard-avatar { width: 30px; height: 30px; border-radius: 50%; }
-
-    /* Share Modal */
     .share-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2500; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
     .share-modal.show { display: flex; }
     .share-content { background: var(--bg-light); padding: 2rem; border-radius: var(--radius); border: 1px solid var(--border-color); max-width: 400px; width: 90%; position: relative; }
@@ -195,8 +189,6 @@
     .share-btn-opt svg { width: 20px; height: 20px; }
     .wa-btn { color: #22c55e; } .pdf-btn { color: #ef4444; } .img-btn { color: #f59e0b; }
     .close-share { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
-
-    /* Screenshot helper */
     #capture-area { position: fixed; left: -9999px; width: 600px; background: var(--bg-dark); padding: 40px; border-radius: 12px; color: var(--text-color); border: 2px solid var(--primary-color); }
 </style>
 </head>
@@ -211,18 +203,15 @@
                 <div>{{ translate('A Greener Tomorrow!') }}</div>
             </div>
         </a>
-        <button class="menu-toggle" id="menuToggle" aria-label="{{ translate('Toggle navigation') }}">
-            &#9776; </button>
+        <button class="menu-toggle" id="menuToggle" aria-label="{{ translate('Toggle navigation') }}">&#9776;</button>
         <nav>
             <a class="navlink active" href="#home" data-section="home">{{ translate("Home") }}</a>
             <a class="navlink" href="#campaigns" data-section="campaigns">{{ translate("Campaigns") }}</a>
             <a class="navlink" href="#add" data-section="add">{{ translate("Add") }}</a>
-
             {% if isadmin %}
             <a class="navlink" href="#pending" data-section="pending">{{ translate("Pending") }}</a>
             {% endif %}
             <a class="navlink" href="#contact" data-section="contact">{{ translate("Contact") }}</a>
-
             <div class="language-selector" style="position: relative;">
                 <button class="cta" id="languageBtn" style="margin: 0;">{{ translate("Change Language") }}</button>
                 <div id="languageDropdown" class="language-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; min-width: 220px; z-index: 1001; margin-top: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
@@ -256,7 +245,6 @@
     <button class="alert-close" id="alertCloseBtn" onclick="closeAlert()" title="{{ translate('Close') }}">✕</button>
 </div>
 
-<!-- Share Modal -->
 <div id="shareModal" class="share-modal">
     <div class="share-content">
         <button class="close-share" onclick="closeShareModal()">×</button>
@@ -271,7 +259,6 @@
             </button>
             <div style="border-top: 1px solid var(--border-color); margin: 5px 0;"></div>
             <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin: 0;">{{ translate("Share on WhatsApp as:") }}</p>
-
             <button class="share-btn-opt wa-btn" onclick="shareWhatsApp('text')">
                 <svg fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/></svg>
                 {{ translate("Text Message") }}
@@ -288,7 +275,6 @@
     </div>
 </div>
 
-<!-- Hidden area for generating image/pdf -->
 <div id="capture-area">
     <h2 style="color: #3b82f6; margin-bottom: 10px;" id="cap-title">Event Title</h2>
     <p style="color: #94a3b8; font-size: 0.9em;">Join this campaign on DEcoCamp!</p>
@@ -317,7 +303,6 @@
                 <h1>{{ translate("Hey") }} {{ translate(fullname.split()[0], save_file=False) }}, {{ translate("Welcome to DEcoCamp!") }}</h1>
                 <p>{{ translate("Join hands to protect our green planet. Start a campaign, plant hope for a brighter, cleaner tomorrow.") }}</p>
                 <div id="ndhome"></div>
-
                 <script>
                 fetch("{{ url_for('static', path='/quotes.json') }}").then(r=>r.json()).then(data=>{
                     const userLanguage = "{{ user_language }}" || "en";
@@ -329,7 +314,6 @@
                         quoteEl.innerText = `{{ translate("Active Campaigns:") }} {{ active_events_length }}\n\n"${quoteText}"`;
                     }; setQuote(); setInterval(setQuote, 6000); });
                 </script>
-
                 {% if top_organizers %}
                 <div class="dash-card" style="margin-top: 2rem;">
                     <h4>🏆 {{ translate("Top Organizers") }}</h4>
@@ -337,7 +321,6 @@
                         {% for org in top_organizers %}
                         <li class="leaderboard-item">
                             <span class="leaderboard-rank">#{{ loop.index }}</span>
-                            <!-- Using UI Avatars with Initials -->
                             <img src="https://ui-avatars.com/api/?name={{ org.username }}&background=random&color=fff&size=128" class="leaderboard-avatar">
                             <div style="flex-grow: 1;">
                                 <div style="font-weight: 600; font-size: 0.9rem;">{{ org.name }}</div>
@@ -349,14 +332,12 @@
                 </div>
                 {% endif %}
             </div>
-
             <div class="account-container">
                 {% if c_user == "None" %}
                     <div class="toggle-buttons">
                         <button id="login-tab-btn" class="active">{{ translate("Login") }}</button>
                         <button id="signup-tab-btn">{{ translate("Sign Up") }}</button>
                     </div>
-
                     <form class="auth-form active" id="loginpage">
                         <div class="form-group">
                             <input type="text" name="loginusername" placeholder="{{ translate('Username or Email') }}" required />
@@ -367,7 +348,6 @@
                         </div>
                         <button type="submit" class="submit-btn">{{ translate("Login") }}</button>
                     </form>
-
                     <form class="auth-form" id="signuppage">
                         <div class="form-group"><input type="text" name="nameofuser" placeholder="{{ translate('Full Name') }}" maxlength="24" required /></div>
                         <div class="form-group"><input type="text" name="username" placeholder="{{ translate('Username') }}" maxlength="20" required /></div>
@@ -378,11 +358,11 @@
                         <div class="form-group"><input type="number" name="signupotp" placeholder="{{ translate('Enter OTP') }}" oninput="this.value=this.value.slice(0,4)" required /></div>
                         <div class="form-group">
                             <input type="password" name="password" id="signup_password" placeholder="{{ translate('Password') }}" required />
-                             <span class="toggle-password" onclick="togglePasswordVisibility('signup_password')">👁️</span>
+                            <span class="toggle-password" onclick="togglePasswordVisibility('signup_password')">👁️</span>
                         </div>
                         <div class="form-group">
                             <input type="password" name="cpassword" id="signup_cpassword" placeholder="{{ translate('Confirm Password') }}" required />
-                             <span class="toggle-password" onclick="togglePasswordVisibility('signup_cpassword')">👁️</span>
+                            <span class="toggle-password" onclick="togglePasswordVisibility('signup_cpassword')">👁️</span>
                         </div>
                         <button type="submit" class="submit-btn">{{ translate("Sign Up") }}</button>
                     </form>
@@ -391,8 +371,11 @@
                     <p>{{ translate("Username:") }} {{ c_user }}</p>
                     <p>{{ translate("Email:") }} {{ userdetails['email'] }}</p>
                     {% if userdetails['events'] != None %}
-                    <p>{{ translate("Events: Total") }} {{ userdetails['events'].split(",") | length }} {{ translate("Events added by you.") }} </p> <button class="otp-btn" onclick="viewyourevents('{{ c_user }}')">{{ translate("Click Here To View Your Events") }}</button>
-                    {% else %} <p>{{ translate("Events by you: No event added by you yet.") }}</p> {% endif %}
+                    <p>{{ translate("Events: Total") }} {{ userdetails['events'].split(",") | length }} {{ translate("Events added by you.") }} </p>
+                    <button class="otp-btn" onclick="viewyourevents('{{ c_user }}')">{{ translate("Click Here To View Your Events") }}</button>
+                    {% else %}
+                    <p>{{ translate("Events by you: No event added by you yet.") }}</p>
+                    {% endif %}
                     <div class="form-buttons">
                         <button onclick="window.location.href='/user/{{ c_user }}'" class="submit-btn">{{ translate("View Profile") }}</button>
                         <button onclick="window.location.href='/clearsession';" class="delete-btn">{{ translate("Logout") }}</button>
@@ -400,120 +383,86 @@
                 {% endif %}
             </div>
         </div>
-
         {% if isadmin %}
         <div style="margin-top: 3rem;">
             <h2>🛠️ System Health (Admin)</h2>
             <div class="dashboard-grid">
-                <div class="dash-card">
-                    <h3>{{ admin_stats['total_users'] }}</h3>
-                    <p>Total Users</p>
-                </div>
-                <div class="dash-card">
-                    <h3>{{ admin_stats['total_events'] }}</h3>
-                    <p>Total Events</p>
-                </div>
-                <div class="dash-card">
-                    <h3>{{ admin_stats['pending_requests'] }}</h3>
-                    <p>Pending Requests</p>
-                </div>
-                <div class="dash-card">
-                    <h3>{{ admin_stats['active_threads'] }}</h3>
-                    <p>Active Threads</p>
-                </div>
+                <div class="dash-card"><h3>{{ admin_stats['total_users'] }}</h3><p>Total Users</p></div>
+                <div class="dash-card"><h3>{{ admin_stats['total_events'] }}</h3><p>Total Events</p></div>
+                <div class="dash-card"><h3>{{ admin_stats['pending_requests'] }}</h3><p>Pending Requests</p></div>
+                <div class="dash-card"><h3>{{ admin_stats['active_threads'] }}</h3><p>Active Threads</p></div>
             </div>
         </div>
         {% endif %}
-        </section>
+    </section>
 
-        <section id="campaigns">
-            <div class="campaign-header">
-                <div>
-                    <h2 id="campaignsTitle">{{ translate("Campaigns") }} ( {{ active_events_length }} )</h2>
-                    <p>{{ translate("Find campaigns to join or create your own.") }}</p>
-                </div>
-                <div class="toggle-buttons">
-                     <button id="listViewBtn" class="active" onclick="toggleView('list')">List View</button>
-                     <button id="calendarViewBtn" onclick="toggleView('calendar')">Calendar View</button>
-                </div>
+    <section id="campaigns">
+        <div class="campaign-header">
+            <div>
+                <h2 id="campaignsTitle">{{ translate("Campaigns") }} ( {{ active_events_length }} )</h2>
+                <p>{{ translate("Find campaigns to join or create your own.") }}</p>
             </div>
-
-            <div id="campaignsLoadingState" style="text-align: center; padding: 3rem;">
-                <p style="color: var(--text-muted); font-size: 1.1rem;">{{ translate("Loading campaigns...") }}</p>
+            <div class="toggle-buttons">
+                <button id="listViewBtn" class="active" onclick="toggleView('list')">List View</button>
+                <button id="calendarViewBtn" onclick="toggleView('calendar')">Calendar View</button>
             </div>
+        </div>
+        <div id="campaignsLoadingState" style="text-align: center; padding: 3rem;">
+            <p style="color: var(--text-muted); font-size: 1.1rem;">{{ translate("Loading campaigns...") }}</p>
+        </div>
+        <div id="campaignsContent" style="display: none;"></div>
+        <div id="calendarView" style="display: none;">
+            <div id="calendar"></div>
+        </div>
+    </section>
 
-            <div id="campaignsContent" style="display: none;">
-                </div>
-
-            <div id="calendarView" style="display: none;">
-                <div id="calendar"></div>
-            </div>
-        </section>
-
-        <section id="pending">
-            {% if isadmin %}
-            <div id="pendingLoadingState" style="text-align: center; padding: 3rem;">
-                <p style="color: var(--text-muted); font-size: 1.1rem;">{{ translate("Loading pending events...") }}</p>
-            </div>
-
-            <div id="pendingContent" style="display: none;">
-                </div>
-            {% else %}
-            <div style="text-align: center; padding: 3rem;">
-                <p style="color: var(--text-muted); font-size: 1.1rem;">{{ translate("Access denied. Admin privileges required.") }}</p>
-            </div>
-            {% endif %}
-        </section>
-
+    <section id="pending">
+        {% if isadmin %}
+        <div id="pendingLoadingState" style="text-align: center; padding: 3rem;">
+            <p style="color: var(--text-muted); font-size: 1.1rem;">{{ translate("Loading pending events...") }}</p>
+        </div>
+        <div id="pendingContent" style="display: none;"></div>
+        {% else %}
+        <div style="text-align: center; padding: 3rem;">
+            <p style="color: var(--text-muted); font-size: 1.1rem;">{{ translate("Access denied. Admin privileges required.") }}</p>
+        </div>
+        {% endif %}
+    </section>
 
     <section id="add">
         <div id="addFormLoadingState" style="text-align: center; padding: 3rem;">
             <p style="color: var(--text-muted); font-size: 1.1rem;">{{ translate("Loading form...") }}</p>
         </div>
-
-        <div id="addFormContent" style="display: none;">
-            </div>
+        <div id="addFormContent" style="display: none;"></div>
     </section>
 
     <section id="contact">
         <div class="form-container">
             <h1>{{ translate("Contact Us") }}</h1>
             <p class="intro">
-                {{ translate("Have a question or feedback?  Send us a message, email: ") }} <a href="mailto:hu1243009@sjchs.edu.in">hu1243009@sjchs.edu.in</a>
+                {{ translate("Have a question or feedback? Send us a message, email: ") }} <a href="mailto:hu1243009@sjchs.edu.in">hu1243009@sjchs.edu.in</a>
             </p>
         </div>
     </section>
 </main>
 
 <script>
-    // ============================================
-    // UTILITY FUNCTIONS
-    // ============================================
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
-
-    // Toggle element visibility
     const toggleDisplay = (el, show) => el && (el.style.display = show ? 'inline' : 'none');
-
-    // Toggle multiple elements
     const toggleElements = (showEls, hideEls) => {
         showEls.forEach(el => toggleDisplay(el, true));
         hideEls.forEach(el => toggleDisplay(el, false));
     };
 
-    // ============================================
-    // ALERT SYSTEM
-    // ============================================
     function showAlert(message, type = 'info', duration = 5000, showButtons = false) {
         const alertBar = $('#alertBar');
         const alertText = $('#alertText');
         const alertButtons = $('#alertButtons');
         const alertCloseBtn = $('#alertCloseBtn');
-
         alertText.textContent = message;
         alertBar.classList.remove('success', 'info', 'warning', 'error');
         if (type !== 'info') alertBar.classList.add(type);
-
         if (type === 'success' && showButtons) {
             alertButtons.style.display = 'flex';
             alertCloseBtn.style.display = 'none';
@@ -522,16 +471,12 @@
             alertButtons.style.display = 'none';
             alertCloseBtn.style.display = 'block';
         }
-
         alertBar.classList.add('show');
         if (duration > 0) setTimeout(closeAlert, duration);
     }
 
     const closeAlert = () => $('#alertBar')?.classList.remove('show');
 
-    // ============================================
-    // SHARE SYSTEM
-    // ============================================
     let currentShareEvent = {};
 
     function openShareModal(name, id, date, time, location, desc) {
@@ -540,23 +485,16 @@
         $('#shareModal').classList.add('show');
     }
 
-    function closeShareModal() {
-        $('#shareModal').classList.remove('show');
-    }
+    function closeShareModal() { $('#shareModal').classList.remove('show'); }
 
-    // Fixed: Copy to clipboard function
     function copyEventLink() {
         const link = `${window.location.origin}/group-chat/from-event/${currentShareEvent.id}`;
         const text = `Check out this event on EcoCamp: ${currentShareEvent.name}\n${link}`;
-
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => {
                 showAlert('{{ translate("Link copied to clipboard!") }}', 'success');
                 closeShareModal();
-            }).catch(err => {
-                console.error("Clipboard API failed, trying fallback", err);
-                fallbackCopyText(text);
-            });
+            }).catch(() => fallbackCopyText(text));
         } else {
             fallbackCopyText(text);
         }
@@ -583,15 +521,9 @@
     function shareWhatsApp(type) {
         const link = `${window.location.origin}/group-chat/from-event/${currentShareEvent.id}`;
         const text = `Hey! I found this cool event on EcoCamp: *${currentShareEvent.name}*\n📅 ${currentShareEvent.date} at ${currentShareEvent.time}\n📍 ${currentShareEvent.location}\n\nJoin here: ${link}`;
-
-        if (type === 'text') {
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-            closeShareModal();
-        } else if (type === 'pdf') {
-            generatePDF();
-        } else if (type === 'image') {
-            generateImage();
-        }
+        if (type === 'text') { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); closeShareModal(); }
+        else if (type === 'pdf') { generatePDF(); }
+        else if (type === 'image') { generateImage(); }
     }
 
     function populateCaptureArea() {
@@ -606,33 +538,22 @@
         showAlert('{{ translate("Generating PDF, please wait...") }}', 'info');
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-
-        doc.setFontSize(22);
-        doc.setTextColor(59, 130, 246); // Primary color
+        doc.setFontSize(22); doc.setTextColor(59, 130, 246);
         doc.text(currentShareEvent.name, 20, 20);
-
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(12); doc.setTextColor(0, 0, 0);
         doc.text("Join this campaign on DEcoCamp!", 20, 30);
         doc.line(20, 35, 190, 35);
-
         doc.setFontSize(14);
         doc.text(`Date: ${currentShareEvent.date}`, 20, 50);
         doc.text(`Time: ${currentShareEvent.time}`, 20, 60);
         doc.text(`Location: ${currentShareEvent.location}`, 20, 70);
-
-        doc.setFontSize(12);
-        doc.setTextColor(100, 100, 100);
+        doc.setFontSize(12); doc.setTextColor(100, 100, 100);
         const splitDesc = doc.splitTextToSize(currentShareEvent.desc, 170);
         doc.text(splitDesc, 20, 90);
-
-        doc.setFontSize(10);
-        doc.setTextColor(59, 130, 246);
+        doc.setFontSize(10); doc.setTextColor(59, 130, 246);
         const link = `${window.location.origin}/group-chat/from-event/${currentShareEvent.id}`;
         doc.textWithLink("Click here to join the event", 20, 150, { url: link });
-
         doc.save(`${currentShareEvent.name}_details.pdf`);
-
         setTimeout(() => {
             if(confirm("PDF Downloaded! Do you want to open WhatsApp to send it?")) {
                 window.open(`https://wa.me/?text=${encodeURIComponent("Check out this event PDF! " + currentShareEvent.name)}`, '_blank');
@@ -644,14 +565,11 @@
     function generateImage() {
         showAlert('{{ translate("Generating Image, please wait...") }}', 'info');
         populateCaptureArea();
-        const node = document.getElementById('capture-area');
-
-        html2canvas(node).then(canvas => {
+        html2canvas(document.getElementById('capture-area')).then(canvas => {
             const link = document.createElement('a');
             link.download = `${currentShareEvent.name}.png`;
             link.href = canvas.toDataURL();
             link.click();
-
             setTimeout(() => {
                 if(confirm("Image Saved! Do you want to open WhatsApp to send it?")) {
                     window.open(`https://wa.me/?text=${encodeURIComponent("Check out this event image! " + currentShareEvent.name)}`, '_blank');
@@ -661,16 +579,12 @@
         closeShareModal();
     }
 
-    // ============================================
-    // SOCKET.IO - LIKES & CHAT
-    // ============================================
     const socket = io();
 
     function changelike(eventid, type) {
         const btn = $(`#likeevent-${eventid}`);
         const countSpan = $(`#eventlike-${eventid}`);
         let currentCount = parseInt(countSpan.innerText) || 0;
-
         if (type === 'add') {
             btn.classList.add('liked');
             btn.setAttribute('onclick', `changelike(${eventid}, 'remove')`);
@@ -680,7 +594,6 @@
             btn.setAttribute('onclick', `changelike(${eventid}, 'add')`);
             countSpan.innerText = Math.max(0, currentCount - 1);
         }
-
         socket.emit("addeventlike", { eventid, byuser: "{{c_user}}", type });
     }
 
@@ -697,97 +610,64 @@
     }
 
     function closeEventChat() {
-        const drawer = $('#sideChatDrawer');
-        drawer.classList.remove('open');
+        $('#sideChatDrawer').classList.remove('open');
         setTimeout(() => $('#globalChatIframe').src = '', 400);
     }
 
-    // ============================================
-    // DESCRIPTION TOGGLE
-    // ============================================
     function toggleDescription(id, action) {
         const shortDesc = $(`#desc-short-${id}`);
         const fullDesc = $(`#desc-full-${id}`);
         const moreBtn = $(`#read-more-btn-${id}`);
         const lessBtn = $(`#read-less-btn-${id}`);
-
-        if (action === 'more') {
-            toggleElements([fullDesc, lessBtn], [shortDesc, moreBtn]);
-        } else {
-            toggleElements([shortDesc, moreBtn], [fullDesc, lessBtn]);
-        }
+        if (action === 'more') { toggleElements([fullDesc, lessBtn], [shortDesc, moreBtn]); }
+        else { toggleElements([shortDesc, moreBtn], [fullDesc, lessBtn]); }
     }
 
-    // ============================================
-    // CAMPAIGN FILTERS & SEARCH
-    // ============================================
     function filterCampaigns(searchInput) {
         const filter = searchInput.value.toLowerCase();
         const categoryWrapper = searchInput.closest('.campaign-category-wrapper');
         if (!categoryWrapper) return;
-
         categoryWrapper.querySelectorAll('.campaign-card').forEach(card => {
             card.classList.toggle('search-hidden', !card.innerText.toLowerCase().includes(filter));
         });
     }
 
-    // ============================================
-    // EVENT MANAGEMENT
-    // ============================================
     function declineEvent(eventId) {
         let reason = null;
         while (!reason || reason.trim() === "") {
             reason = prompt("{{ translate('A reason is required to decline this event:') }}");
-            if (reason === null) {
-                showAlert("{{ translate('Decline action cancelled.') }}", 'info');
-                return;
-            }
+            if (reason === null) { showAlert("{{ translate('Decline action cancelled.') }}", 'info'); return; }
         }
         window.location.href = `/decline_event/${eventId}/${encodeURIComponent(reason)}`;
     }
 
     window.asktodelete = id => {
-        if (confirm("{{ translate('Are you sure?') }}")) {
-            window.location.href = `deleteevent/${id}`;
-        }
+        if (confirm("{{ translate('Are you sure?') }}")) { window.location.href = `deleteevent/${id}`; }
     };
 
-    // ============================================
-    // AI DESCRIPTION GENERATOR
-    // ============================================
     async function generateDescription() {
         {% if c_user == "None" %}
             showAlert("{{ translate('To avoid spam, we recommend you to please login before generating AI description.') }}", 'warning');
             return;
         {% endif %}
-
         const form = $('#addEventForm');
         const formData = new FormData(form);
-        const requiredFields = ['eventname', 'location', 'category', 'eventdate', 'enddate', 'starttime', 'endtime'];
+        const requiredFields = ['eventname', 'location', 'category', 'eventstartdate', 'eventenddate', 'eventstarttime', 'eventendtime'];
         const missing = requiredFields.filter(key => !formData.get(key));
-
         if (missing.length > 0) {
             showAlert("{{ translate('Please fill in ALL fields (Name, Location, Category, Dates, Times) before generating.') }}", 'warning');
             return;
         }
-
         const btn = $('#aiBtn');
         const originalText = btn.innerHTML;
         const resultsContainer = $('#aiResults');
-
         btn.disabled = true;
         btn.innerHTML = '✨ {{ translate("Generating the descriptions please wait some seconds...") }}';
         resultsContainer.classList.remove('show');
         resultsContainer.innerHTML = '';
-
         try {
-            const response = await fetch('/generate_ai_description', {
-                method: 'POST',
-                body: formData
-            });
-
+            const response = await fetch('/generate_ai_description', { method: 'POST', body: formData });
             if (!response.ok) throw new Error('Generation failed');
-
             const data = await response.json();
             const labels = {
                 'desc1': '{{ translate("Formal") }}',
@@ -795,7 +675,6 @@
                 'desc3': '{{ translate("Promotional") }}',
                 'desc4': '{{ translate("Entertaining") }}'
             };
-
             Object.keys(data).forEach(key => {
                 const card = document.createElement('div');
                 card.className = `ai-option-card ai-card-${key}`;
@@ -807,10 +686,8 @@
                 };
                 resultsContainer.appendChild(card);
             });
-
             $('#aiInstruction').style.display = 'block';
             resultsContainer.classList.add('show');
-
         } catch (error) {
             console.error('AI Error:', error);
             showAlert("{{ translate('Failed to generate descriptions. Please try again.') }}", 'warning');
@@ -820,21 +697,26 @@
         }
     }
 
-    // ============================================
-    // DYNAMIC CONTENT LOADER
-    // ============================================
     const contentLoaders = {
         campaigns: { loaded: false, callback: initializeCampaignListeners },
         addForm: { loaded: false, callback: initializeAddFormListeners },
         pending: { loaded: false, callback: initializePendingListeners }
     };
 
-    async function loadContent(type, url, loadingId, contentId, retryFn) {
-        // Force reload if viewyourevents is set (simple hack to ensure fresh content)
-        if (contentLoaders[type].loaded && !window.location.hash.includes('campaigns')) return;
+    function rerunScripts(container) {
+        container.querySelectorAll('script').forEach(oldScript => {
+            const newScript = document.createElement('script');
+            oldScript.getAttributeNames().forEach(attr =>
+                newScript.setAttribute(attr, oldScript.getAttribute(attr))
+            );
+            newScript.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+    }
 
-        // Always reset loaded for campaigns to support dynamic updates
-        if(type === 'campaigns') contentLoaders[type].loaded = false;
+    async function loadContent(type, url, loadingId, contentId, retryFn) {
+        if (contentLoaders[type].loaded && !window.location.hash.includes('campaigns')) return;
+        if (type === 'campaigns') contentLoaders[type].loaded = false;
 
         const loadingState = $(loadingId);
         const content = $(contentId);
@@ -842,12 +724,11 @@
         try {
             const response = await fetch(url);
             if (!response.ok) throw new Error(`Failed to load ${type}`);
-
             content.innerHTML = await response.text();
+            rerunScripts(content);
             content.style.display = 'block';
             loadingState.style.display = 'none';
             contentLoaders[type].loaded = true;
-
             contentLoaders[type].callback?.();
         } catch (error) {
             console.error(`Error loading ${type}:`, error);
@@ -862,28 +743,21 @@
     const loadAddForm = () => loadContent('addForm', '/show_add_form', '#addFormLoadingState', '#addFormContent', 'loadAddForm()');
     const loadPendingEvents = () => loadContent('pending', '/show_pending_events', '#pendingLoadingState', '#pendingContent', 'loadPendingEvents()');
 
-    // ============================================
-    // CONTENT INITIALIZERS
-    // ============================================
     function initializeCampaignListeners() {
         const campaignsSection = $('#campaigns');
         const backToAllBtn = $('#backToAllBtn');
         const allCategoryWrappers = $$('.campaign-category-wrapper');
-
         campaignsSection?.addEventListener('click', e => {
             if (!e.target.matches('.view-all-btn')) return;
             const categoryIdToShow = e.target.dataset.categoryId;
-
             allCategoryWrappers.forEach(wrapper => {
                 const show = wrapper.dataset.categoryId === categoryIdToShow;
                 wrapper.style.display = show ? 'block' : 'none';
                 if (show) wrapper.querySelectorAll('.campaign-card.hidden').forEach(c => c.classList.remove('hidden'));
             });
-
             backToAllBtn.style.display = 'block';
             campaignsSection.scrollIntoView({ behavior: 'smooth' });
         });
-
         backToAllBtn?.addEventListener('click', () => {
             allCategoryWrappers.forEach(w => {
                 w.style.display = 'block';
@@ -896,7 +770,6 @@
     function initializeAddFormListeners() {
         const form = $('#addEventForm');
         if (!form) return;
-
         form.addEventListener('submit', e => {
             e.preventDefault();
             e.target.dataset.url = '/addeventreq';
@@ -905,7 +778,6 @@
                 if (text.includes('Registered')) setTimeout(() => location.reload(), 4000);
             });
         });
-
         form.addEventListener('change', e => {
             const fd = new FormData();
             fd.append('field', e.target.name);
@@ -915,88 +787,57 @@
     }
 
     function initializePendingListeners() {
-            // Select all approve buttons instead of forms
-            $$('.approve-btn').forEach(btn => {
-                btn.addEventListener('click', e => {
-                    e.preventDefault();
-
-                    // Find the parent row (tr)
-                    const row = btn.closest('tr');
-                    if (!row) return;
-
-                    const originalText = btn.textContent;
-                    btn.disabled = true;
-                    btn.textContent = '{{ translate("Processing...") }}';
-
-                    const formData = new FormData();
-                    const inputs = row.querySelectorAll('input, select, textarea');
-
-                    inputs.forEach(input => {
-                        formData.append(input.name, input.value);
-                    });
-
-                    fetch('/addevent', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => {
-                        if (response.redirected) {
-                            window.location.href = response.url;
-                            return null;
-                        }
-                        return response.text();
-                    })
-                    .then(text => {
-                        if (text === null) return;
-
-                        const isSuccess = text.toLowerCase().includes('success') ||
-                                         text.toLowerCase().includes('approved') ||
-                                         text.toLowerCase().includes('added');
-
-                        showAlert(text, isSuccess ? 'success' : 'info');
-
-                        if (isSuccess) {
-                            // Remove the row instantly for better UX, or reload the table
-                            row.style.opacity = '0';
-                            setTimeout(() => {
-                                contentLoaders.pending.loaded = false;
-                                loadPendingEvents();
-                            }, 1000);
-                        } else {
-                            btn.disabled = false;
-                            btn.textContent = originalText;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showAlert('{{ translate("An error occurred.") }}', 'error');
+        $$('.approve-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.preventDefault();
+                const row = btn.closest('tr');
+                if (!row) return;
+                const originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = '{{ translate("Processing...") }}';
+                const formData = new FormData();
+                row.querySelectorAll('input, select, textarea').forEach(input => {
+                    formData.append(input.name, input.value);
+                });
+                fetch('/addevent', { method: 'POST', body: formData })
+                .then(response => {
+                    if (response.redirected) { window.location.href = response.url; return null; }
+                    return response.text();
+                })
+                .then(text => {
+                    if (text === null) return;
+                    const isSuccess = text.toLowerCase().includes('success') ||
+                                     text.toLowerCase().includes('approved') ||
+                                     text.toLowerCase().includes('added');
+                    showAlert(text, isSuccess ? 'success' : 'info');
+                    if (isSuccess) {
+                        row.style.opacity = '0';
+                        setTimeout(() => { contentLoaders.pending.loaded = false; loadPendingEvents(); }, 1000);
+                    } else {
                         btn.disabled = false;
                         btn.textContent = originalText;
-                    });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('{{ translate("An error occurred.") }}', 'error');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
                 });
             });
-        }
+        });
+    }
 
-    // ============================================
-    // FORM HANDLER
-    // ============================================
     const handleFormSubmit = async (form, callback) => {
         const btn = form.querySelector('button[type="submit"]');
         const originalBtnText = btn.textContent;
-
         btn.disabled = true;
         btn.textContent = '{{ translate("Processing...") }}';
-
         try {
-            const response = await fetch(form.dataset.url, {
-                method: 'POST',
-                body: new FormData(form)
-            });
+            const response = await fetch(form.dataset.url, { method: 'POST', body: new FormData(form) });
             const text = await response.text();
-
             const type = text.includes('Success') || text.includes('Registered') ? 'success' :
                          text.includes('Error') || text.includes('Invalid') ? 'error' : 'info';
-
             showAlert(text, type);
             callback?.(text);
         } catch (error) {
@@ -1008,36 +849,22 @@
         }
     };
 
-    // ============================================
-    // NAVIGATION & SECTIONS
-    // ============================================
     const showSection = id => {
         const target = id || 'home';
-        const nav = $('nav');
-
         $$('.navlink').forEach(l => l.classList.toggle('active', l.dataset.section === target));
         $$('main > section').forEach(s => s.classList.toggle('active', s.id === target));
-
         window.scrollTo(0, 0);
-        nav?.classList.remove('active');
-
-        // Load dynamic content
+        $('nav')?.classList.remove('active');
         if (target === 'campaigns') loadCampaigns();
         if (target === 'add') loadAddForm();
         if (target === 'pending') loadPendingEvents();
     };
 
-    // ============================================
-    // PASSWORD VISIBILITY TOGGLE
-    // ============================================
     window.togglePasswordVisibility = id => {
         const field = $(`#${id}`);
         if (field) field.type = field.type === 'password' ? 'text' : 'password';
     };
 
-    // ============================================
-    // HELPER FUNCTIONS
-    // ============================================
     const addFormSubmitListener = (selector, url, callback) => {
         $(selector)?.addEventListener('submit', e => {
             e.preventDefault();
@@ -1046,9 +873,6 @@
         });
     };
 
-    // ============================================
-    // CALENDAR & VIEW TOGGLE
-    // ============================================
     let calendar;
 
     window.toggleView = function(view) {
@@ -1056,27 +880,14 @@
         const calBtn = $('#calendarViewBtn');
         const listContent = $('#campaignsContent');
         const calContent = $('#calendarView');
-        const loading = $('#campaignsLoadingState');
-
-        // Ensure data is loaded
         if (!contentLoaders.campaigns.loaded) loadCampaigns();
-
         if (view === 'list') {
-            listBtn.classList.add('active');
-            calBtn.classList.remove('active');
-            listContent.style.display = 'block';
-            calContent.style.display = 'none';
+            listBtn.classList.add('active'); calBtn.classList.remove('active');
+            listContent.style.display = 'block'; calContent.style.display = 'none';
         } else {
-            listBtn.classList.remove('active');
-            calBtn.classList.add('active');
-            listContent.style.display = 'none';
-            calContent.style.display = 'block';
-
-            if (!calendar) {
-                initCalendar();
-            } else {
-                setTimeout(() => calendar.render(), 100);
-            }
+            listBtn.classList.remove('active'); calBtn.classList.add('active');
+            listContent.style.display = 'none'; calContent.style.display = 'block';
+            if (!calendar) { initCalendar(); } else { setTimeout(() => calendar.render(), 100); }
         }
     };
 
@@ -1084,30 +895,17 @@
         const calendarEl = document.getElementById('calendar');
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,listWeek'
-            },
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek' },
             events: function(info, successCallback, failureCallback) {
-                fetch('/api')
-                .then(response => response.json())
-                .then(data => {
+                fetch('/api').then(r => r.json()).then(data => {
                     const events = data['active events'].map(e => ({
                         title: e.eventname,
-                        start: e.eventdate + (e.starttime ? 'T' + e.starttime : ''),
-                        url: '#', // or link to specific event
-                        extendedProps: {
-                            description: e.description,
-                            location: e.location
-                        }
+                        start: e.eventstartdate + (e.eventstarttime ? 'T' + e.eventstarttime : ''),
+                        url: '#',
+                        extendedProps: { description: e.description, location: e.location }
                     }));
                     successCallback(events);
-                })
-                .catch(error => {
-                    console.error('Error fetching events:', error);
-                    failureCallback(error);
-                });
+                }).catch(failureCallback);
             },
             eventClick: function(info) {
                 info.jsEvent.preventDefault();
@@ -1117,102 +915,70 @@
         calendar.render();
     }
 
-    // ============================================
-    // OTHER FUNCTIONS
-    // ============================================
     window.changetemplate = () => fetch("/changetemplate").then(() => location.reload());
     window.viewyourevents = username => fetch(`/viewyourevents/${username}`, { method: 'POST' })
         .then(() => { window.location.href = '#campaigns'; location.reload(); });
     window.sendsortreq = sortby => fetch(`/setsortby/${sortby}`, { method: 'POST' })
         .then(() => { window.location.href = '#campaigns'; location.reload(); });
 
-    // ============================================
-    // DOM CONTENT LOADED
-    // ============================================
     document.addEventListener('DOMContentLoaded', () => {
-        // Check for stored language change alert
         const storedAlert = localStorage.getItem('showLanguageChangeAlert');
         if (storedAlert) {
             try {
                 const alertData = JSON.parse(storedAlert);
                 showAlert(alertData.message, 'success', 0, true);
                 localStorage.removeItem('showLanguageChangeAlert');
-            } catch (e) {
-                console.error('Error parsing stored alert:', e);
-            }
+            } catch (e) { console.error('Error parsing stored alert:', e); }
         }
 
-        // Navigation
         document.body.addEventListener('click', e => {
             if (e.target.matches('.navlink')) {
                 e.preventDefault();
                 showSection(e.target.dataset.section);
                 location.hash = e.target.dataset.section;
             }
-            if (e.target.matches('#menuToggle')) {
-                $('nav')?.classList.toggle('active');
-            }
+            if (e.target.matches('#menuToggle')) { $('nav')?.classList.toggle('active'); }
         });
 
-        if (location.hash) {
-            showSection(location.hash.slice(1));
-        } else {
-            showSection('home');
-        }
+        if (location.hash) { showSection(location.hash.slice(1)); }
+        else { showSection('home'); }
         window.addEventListener('hashchange', () => showSection(location.hash.slice(1)));
 
-        // Auth forms
         addFormSubmitListener('#loginpage', '/login', text => text.includes('Success') && location.reload());
         addFormSubmitListener('#signuppage', '/signup', text => text.includes('Success') && location.reload());
 
-        // Toggle auth tabs
         $('.toggle-buttons')?.addEventListener('click', e => {
             if (e.target.tagName !== 'BUTTON') return;
-            // Check if it's the view toggle buttons (ignore them here)
             if (e.target.id === 'listViewBtn' || e.target.id === 'calendarViewBtn') return;
-
             const isLogin = e.target.id === 'login-tab-btn';
-
             $('#login-tab-btn').classList.toggle('active', isLogin);
             $('#signup-tab-btn').classList.toggle('active', !isLogin);
             $('#loginpage').classList.toggle('active', isLogin);
             $('#signuppage').classList.toggle('active', !isLogin);
         });
 
-        // OTP sender
         $('#sendOtpBtn')?.addEventListener('click', async e => {
             const btn = e.target;
             const emailEl = $('#email');
-
-            if (!emailEl.checkValidity()) {
-                return showAlert("{{ translate('Please enter a valid email address.') }}", 'warning');
-            }
-
+            if (!emailEl.checkValidity()) { return showAlert("{{ translate('Please enter a valid email address.') }}", 'warning'); }
             btn.disabled = true;
             btn.textContent = "{{ translate('Sending...') }}";
-
             try {
                 const fd = new FormData();
                 fd.append('email', emailEl.value);
                 const response = await fetch("/sendsignupotp", { method: "POST", body: fd });
                 const text = await response.text();
-
                 if (!response.ok) throw new Error(text || '{{ translate("Failed to send OTP.") }}');
                 showAlert(text, 'info');
             } catch (err) {
                 showAlert(err.message, 'error');
             } finally {
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.textContent = "{{ translate('Send OTP') }}";
-                }, 5000);
+                setTimeout(() => { btn.disabled = false; btn.textContent = "{{ translate('Send OTP') }}"; }, 5000);
             }
         });
 
-        // Language selector
         const languageBtn = $('#languageBtn');
         const languageDropdown = $('#languageDropdown');
-        const langOptions = $$('.lang-option');
 
         if (languageBtn) {
             languageBtn.addEventListener('click', e => {
@@ -1220,39 +986,30 @@
                 languageDropdown.style.display = languageDropdown.style.display === 'none' ? 'block' : 'none';
             });
 
-            langOptions.forEach(option => {
+            $$('.lang-option').forEach(option => {
                 option.addEventListener('click', async e => {
                     const langCode = e.target.dataset.lang;
                     const langName = e.target.textContent;
-
                     localStorage.setItem('selectedLanguage', langCode);
-
                     try {
                         showAlert(`{{ translate("Please wait changing language to ") }} ${langName}...`, 'info', 0);
                         const response = await fetch(`/setlanguage/${langCode}`, { method: 'POST' });
-
                         if (!response.ok) throw new Error("{{ translate('Failed to set language') }}");
-
                         localStorage.setItem('showLanguageChangeAlert', JSON.stringify({
                             message: `{{ translate("Language changed to ") }} ${langName}. {{ translate("If not changed please try to reload the page or click the button below to reload!") }}`,
                             duration: 0
                         }));
-
                         window.location.reload();
                     } catch (err) {
                         showAlert('{{ translate("Could not change language right now. Please try again.") }}', 'error');
                         console.error(err);
                     }
-
                     languageDropdown.style.display = 'none';
                 });
             });
 
-            // Close dropdown when clicking outside
             document.addEventListener('click', e => {
-                if (!e.target.closest('.language-selector')) {
-                    languageDropdown.style.display = 'none';
-                }
+                if (!e.target.closest('.language-selector')) { languageDropdown.style.display = 'none'; }
             });
         }
     });

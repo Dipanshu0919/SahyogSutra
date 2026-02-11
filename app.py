@@ -388,7 +388,7 @@ async def generate_ai_description(request: Request):
 
     try:
         form_data = await request.form()
-        field = ["eventname", "starttime", "endtime", "eventdate", "enddate", "location", "category"]
+        field = ["eventname", "starttime", "endtime", "eventstartdate", "enddate", "location", "category"]
         values = [[x, form_data.get(x)] for x in field if form_data.get(x)]
         u_lang = request.session.get("lang", "en")
         current_month = datetime.datetime.now().strftime("%B")
@@ -477,7 +477,7 @@ async def changetemplate(request: Request):
 
 @app.get("/show_add_form")
 async def show_add_form(request: Request):
-    fi = ["eventname", "email", "starttime", "endtime", "eventdate", "enddate", "location", "category", "description"]
+    fi = ["eventname", "email", "starttime", "endtime", "eventstartdate", "enddate", "location", "category", "description"]
     fv = {x: request.session.get(x, "") for x in fi}
 
     user_lang = request.session.get("lang", "en")
@@ -543,7 +543,7 @@ async def show_campaigns(request: Request, db: AsyncDB = Depends(get_db)):
 
     viewuserevent = request.session.pop("vieweventusername", str(currentuname))
     ve = request.session.pop("viewyourevents", False)
-    sortby = request.session.get("sortby", "eventdate")
+    sortby = request.session.get("sortby", "eventstartdate")
 
     def bound_translate(text, save_file=True):
         return translate_text(text, lang=user_lang, save_file=save_file)
@@ -762,7 +762,7 @@ async def dummyevent(request: Request):
     request.session["description"] = "Join us for a community tree plantation drive to make our neighborhood greener and healthier!"
     request.session["location"] = random.choice(["Central Park", "Community Center", "City Hall", "Riverside Park", "Downtown Square"])
     request.session["category"] = random.choice(["Tree Plantation", "Blood Donation", "Cleanliness Drive"])
-    request.session["eventdate"] = f"{random.randint(2025, 2028)}-{random.randint(10, 12):02d}-{random.randint(10, 28):02d}"
+    request.session["eventstartdate"] = f"{random.randint(2025, 2028)}-{random.randint(10, 12):02d}-{random.randint(10, 28):02d}"
     request.session["enddate"] = f"{random.randint(2025, 2028)}-{random.randint(10, 12):02d}-{random.randint(10, 28):02d}"
     request.session["starttime"] = f"{random.randint(10, 12)}:{random.randint(10, 59)}"
     request.session["endtime"] = f"{random.randint(10, 12)}:{random.randint(10, 59)}"
@@ -821,7 +821,7 @@ async def download_ics(eventid: int, db: AsyncDB = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Event not found")
 
     try:
-        start_dt = f"{event['eventdate'].replace('-', '')}T{event['starttime'].replace(':', '')}00"
+        start_dt = f"{event['eventstartdate'].replace('-', '')}T{event['starttime'].replace(':', '')}00"
         end_dt = f"{event['enddate'].replace('-', '')}T{event['endtime'].replace(':', '')}00"
     except Exception:
         start_dt = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
@@ -874,7 +874,7 @@ async def export_data(request: Request, db: AsyncDB = Depends(get_db)):
             await db.execute("SELECT * FROM eventdetail WHERE eventid=?", (eid,))
             ev = await db.fetchone()
             if ev:
-                writer.writerow([ev["eventid"], ev["eventname"], ev["location"], ev["category"], ev["eventdate"], ev["description"]])
+                writer.writerow([ev["eventid"], ev["eventname"], ev["location"], ev["category"], ev["eventstartdate"], ev["description"]])
 
     output.seek(0)
     return StreamingResponse(

@@ -1,60 +1,129 @@
 {
     "Environment & Nature": [
-        "Tree Plantation",
-        "Cleanliness Drive",
-        "Beach / River Cleanup",
-        "Wildlife Census Walk",
-        "Composting Workshop",
-        "Rainwater Harvesting Drive",
-        "Urban Farming / Terrace Garden"
+        "Tree Plantation Drive",
+        "Cleanliness & Waste Management Drive",
+        "Beach / River / Lake Cleanup",
+        "Wildlife Conservation Walk",
+        "Composting & Zero-Waste Workshop",
+        "Rainwater Harvesting Awareness Campaign",
+        "Urban Farming / Community Garden Setup",
+        "Plastic-Free Community Campaign",
+        "Biodiversity Mapping Project",
+        "Climate Change Awareness Event",
+        "Eco-Brick Making Workshop",
+        "Sustainable Living Bootcamp"
     ],
+
     "Health & Wellness": [
-        "Blood Donation",
-        "Free Medical Camp",
+        "Blood Donation Drive",
+        "Free Medical & Health Checkup Camp",
         "Eye / Dental Checkup Camp",
-        "Yoga & Meditation Session",
         "Mental Health Awareness Walk",
-        "Fitness Bootcamp"
+        "Yoga & Meditation Session",
+        "Fitness Bootcamp",
+        "Nutrition & Healthy Cooking Workshop",
+        "Women’s Health Awareness Camp",
+        "First Aid & CPR Training",
+        "Substance Abuse Awareness Program",
+        "Hygiene & Sanitation Campaign"
     ],
-    "Education & Skills": [
-        "Free Tutoring / Coaching Camp",
+
+    "Education & Skills Development": [
+        "Free Tutoring / Community Teaching Camp",
         "Digital Literacy Workshop",
-        "Coding Bootcamp for Kids",
+        "Coding & Robotics Bootcamp",
         "Financial Literacy Seminar",
-        "Spoken English Workshop"
+        "Language & Communication Workshop",
+        "Career Guidance & Mentorship Camp",
+        "Entrepreneurship & Startup Workshop",
+        "Public Speaking & Leadership Training",
+        "Scholarship & Higher Education Guidance",
+        "STEM Education Initiative",
+        "AI & Future Skills Seminar"
     ],
-    "Community & Social": [
+
+    "Community & Social Impact": [
         "Food Distribution Drive",
-        "Clothes Donation Camp",
-        "Old Age Home Visit",
+        "Clothes & Essentials Donation Camp",
+        "Community Kitchen Initiative",
+        "Old Age Home Visit & Support Program",
         "Orphanage Visit & Activity Day",
-        "Stray Animal Feeding Drive"
+        "Stray Animal Care & Adoption Drive",
+        "Inclusive Community Sports Day",
+        "Skill Training for Underprivileged Youth",
+        "Self-Help Group Support Program",
+        "Community Dialogue & Peace Building Circle",
+        "Social Inclusion & Diversity Awareness Event"
     ],
-    "Arts & Culture": [
+
+    "Arts, Culture & Creative Expression": [
         "Street Art / Mural Painting",
         "Cultural Festival",
         "Photography Walk",
         "Open Mic / Poetry Slam",
-        "Folk Dance / Music Performance"
+        "Traditional Dance & Music Performance",
+        "Theatre for Social Change",
+        "Heritage Walk",
+        "Eco-Art from Waste Workshop",
+        "Community Talent Show",
+        "Documentary Screening & Discussion"
     ],
-    "Civic & Awareness": [
+
+    "Civic Engagement & Awareness": [
         "Voter Awareness Campaign",
         "Road Safety Awareness Drive",
-        "Anti-Drug Awareness Event",
-        "Women Safety Workshop",
-        "Disaster Preparedness Drill"
+        "Women Safety & Self-Defense Workshop",
+        "Cyber Safety & Digital Awareness Program",
+        "Anti-Drug & Substance Awareness Event",
+        "Legal Literacy Camp",
+        "Human Rights Awareness Workshop",
+        "Disaster Preparedness Drill",
+        "Fire Safety Training",
+        "Anti-Corruption & Transparency Campaign"
     ],
+
     "Sports & Recreation": [
-        "Cricket / Football Tournament",
+        "Football / Basketball / Cricket Tournament",
         "Cycling Rally",
-        "Marathon / Fun Run",
-        "Kabaddi Tournament",
-        "Chess / Carrom Competition"
+        "Marathon / Charity Run",
+        "Traditional Games Tournament",
+        "Chess / Strategy Game Competition",
+        "Adventure & Trekking Camp",
+        "Yoga Marathon",
+        "Community Fitness Challenge",
+        "Obstacle Course Challenge"
     ],
-    "Disaster Relief": [
+
+    "Disaster Relief & Humanitarian Support": [
         "Flood Relief Camp",
         "Earthquake Relief Drive",
-        "Winter Clothing Drive",
-        "Wildfire Recovery Plantation"
+        "Wildfire Recovery Plantation",
+        "Winter Clothing & Shelter Drive",
+        "Emergency Response Volunteer Training",
+        "Relief Fundraising Event",
+        "Temporary Shelter Setup Program",
+        "Community Resilience Planning Workshop"
+    ],
+
+    "Sustainability, Innovation & Technology for Good": [
+        "Green Startup Pitch Event",
+        "Social Innovation Hackathon",
+        "Renewable Energy Awareness Camp",
+        "Repair & Upcycling Workshop",
+        "Smart Village / Smart City Initiative",
+        "Tech for Farmers Workshop",
+        "Data Collection for Social Projects",
+        "Sustainable Product Exhibition"
+    ],
+
+    "Global Campaigns & Advocacy": [
+        "Gender Equality Campaign",
+        "Climate Action Week",
+        "Peace & Unity Rally",
+        "Youth Leadership Summit",
+        "Global Volunteer Day",
+        "Humanitarian Awareness Conference",
+        "Cultural Exchange Program",
+        "Global Education Access Campaign"
     ]
 }

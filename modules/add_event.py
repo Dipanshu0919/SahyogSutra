@@ -2,7 +2,7 @@ from . import sendlog, sendmail, detailsformat
 
 def addevent(c, form_data: dict, owner_username: str):
     # List of expected fields
-    field = ["eventname", "email", "starttime", "endtime", "eventdate", "enddate", "location", "category", "description", "username"]
+    field = ["eventname", "email", "eventstarttime", "eventendtime", "eventstartdate", "eventenddate", "location", "category", "description", "username"]
 
     # Construct event_values.
     # Logic: iterate through 'field'. If key is 'username', use owner_username. Else get from form_data.
@@ -74,7 +74,7 @@ def addeventrequest(c, form_data: dict, session: dict):
     if not uuname:
         return "Please Login First To Add Event."
 
-    field = ["eventname", "email", "starttime", "endtime", "eventdate", "enddate", "location", "category", "description", "username"]
+    field = ["eventname", "email", "eventstarttime", "eventendtime", "eventstartdate", "eventenddate", "location", "category", "description", "username"]
 
     event_values = []
     for f in field:
