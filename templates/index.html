@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>DEcoCamp — A Greener Tommorow!</title>
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -14,9 +14,9 @@
 <style>
     :root { --primary-color: #3b82f6; --primary-hover: #2563eb; --bg-dark: #0f172a; --bg-light: #1e293b; --text-color: #f1f5f9; --text-muted: #94a3b8; --border-color: rgba(148,163,184,0.2); --success-color: #22c55e; --danger-color: #ef4444; --danger-hover: #dc2626; --radius: 12px; --max-width: 99%; --ease: cubic-bezier(.2,.9,.3,1); --ai-gradient: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth;}
     body { font-family: 'Inter',sans-serif; background: var(--bg-dark); color: var(--text-color); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.6; overflow-x: hidden; }
-    .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: transparent; backdrop-filter: none; border-bottom: 1px solid var(--border-color); padding: 0 1rem; }
+    .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: transparent; backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); padding: 0 1rem; }
     .nav-inner { display: flex; align-items: center; justify-content: space-between; max-width: var(--max-width); margin: 0 auto; height: 70px; }
     .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 20px; color: var(--text-color); text-decoration: none; }
     .logo { width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg,var(--primary-color),#60a5fa); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
@@ -147,7 +147,7 @@
     .ai-option-card h5 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; color: rgba(255,255,255,0.9); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
     .ai-option-card p { font-size: 0.8rem; color: rgba(255,255,255,0.95); margin-bottom: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 10; -webkit-box-orient: vertical; overflow: hidden; }
     .ai-tag { font-size: 0.6rem; padding: 2px 4px; border-radius: 4px; background: rgba(0,0,0,0.2); }
-    .chat-drawer { position: fixed; top: 0; right: -450px; width: 400px; height: 100vh; background: var(--bg-light); box-shadow: -5px 0 35px rgba(0,0,0,0.6); z-index: 2000; transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; border-left: 1px solid var(--border-color); }
+    .chat-drawer { position: fixed; top: 0; right: -450px; width: 400px; height: 100%; height: 100dvh; background: var(--bg-light); box-shadow: -5px 0 35px rgba(0,0,0,0.6); z-index: 2000; transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; border-left: 1px solid var(--border-color); }
     .chat-drawer.open { right: 0; }
     .chat-header { padding: 15px 20px; background: var(--bg-dark); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
     .chat-header h3 { margin: 0; font-size: 1.1rem; color: var(--text-color); }
@@ -222,7 +222,6 @@
                 <div id="languageDropdown" class="language-dropdown" style="display: none; position: absolute; top: 100%; right: 0; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; min-width: 220px; z-index: 1001; margin-top: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                     <div class="lang-option" data-lang="en">English / English (en)</div>
                     <div class="lang-option" data-lang="hi">हिंदी / Hindi (hi)</div>
-                    <div class="lang-option" data-lang="ta">தமிழ் / Tamil (ta)</div>
                     <div class="lang-option" data-lang="te">తెలుగు / Telugu (te)</div>
                     <div class="lang-option" data-lang="kn">ಕನ್ನಡ / Kannada (kn)</div>
                     <div class="lang-option" data-lang="ml">മലയാളം / Malayalam (ml)</div>
@@ -439,29 +438,6 @@
     }
 
     const closeAlert = () => $('#alertBar')?.classList.remove('show');
-
-    const socket = io();
-
-    function changelike(eventid, type) {
-        const btn = $(`#likeevent-${eventid}`);
-        const countSpan = $(`#eventlike-${eventid}`);
-        let currentCount = parseInt(countSpan.innerText) || 0;
-        if (type === 'add') {
-            btn.classList.add('liked');
-            btn.setAttribute('onclick', `changelike(${eventid}, 'remove')`);
-            countSpan.innerText = currentCount + 1;
-        } else {
-            btn.classList.remove('liked');
-            btn.setAttribute('onclick', `changelike(${eventid}, 'add')`);
-            countSpan.innerText = Math.max(0, currentCount - 1);
-        }
-        socket.emit("addeventlike", { eventid, byuser: "{{c_user}}", type });
-    }
-
-    socket.on("update_like", data => {
-        const countSpan = $(`#eventlike-${data.eventid}`);
-        if (countSpan) countSpan.innerText = data.likes;
-    });
 
     function openeventchat(eventid) {
         const drawer = $('#sideChatDrawer');

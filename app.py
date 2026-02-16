@@ -41,8 +41,7 @@ non_file_translations = {}
 # --- In-Memory Stores ---
 rate_limit_store: dict[str, float] = {}  # {ip: timestamp}
 
-# --- Thread Pool for Translation (capped at 4 workers) ---
-_translation_executor = ThreadPoolExecutor(max_workers=4)
+_translation_executor = ThreadPoolExecutor(max_workers=50)
 
 # --- Campaigns Cache ---
 _campaigns_cache: dict = {"data": None, "ts": 0}
@@ -267,6 +266,23 @@ def translate_text(text, lang=None, save_file=True):
     translationss = all_translations if save_file else non_file_translations
     return translationss.get(text, {}).get(lang, text)
 
+@app.post("/translate_event")
+async def translate_event(request: Request):
+    data = await request.json()
+    lang = request.session.get("lang", "en")
+
+    def transl(text, lang):
+        t = Translator()
+        translated = t.translate(text, dest=lang).text
+        return translated
+
+    output = {
+        "name": transl(data["eventname"], lang),
+        "description": transl(data["description"], lang),
+        "location": transl(data["location"], lang),
+    }
+    return JSONResponse(content=output)
+
 # --- Exception Handlers ---
 
 @app.exception_handler(StarletteHTTPException)
@@ -389,11 +405,9 @@ async def generate_ai_description(request: Request):
         form_data = await request.form()
         field = ["eventname", "starttime", "endtime", "eventstartdate", "enddate", "location", "category"]
         values = [[x, form_data.get(x)] for x in field if form_data.get(x)]
-        u_lang = request.session.get("lang", "en")
-        current_month = datetime.datetime.now().strftime("%B")
 
-        content = f"""Generate a description based on following details in pure '{u_lang}' language.
-        Context: The current month is {current_month}, so mention appropriate weather/preparations if needed.
+        content = f"""Generate a description based on following details in pure english language.
+        Context:
         Details of event: {values}
         Generate total 4x descriptions (max 500 words each). Include hashtags. Reply strictly in JSON:
         {{"desc1": "Formal tone", "desc2": "Informal tone", "desc3": "Promotional tone", "desc4": "Entertaining/Fun tone"}}"""
@@ -556,7 +570,8 @@ async def show_campaigns(request: Request, db: AsyncDB = Depends(get_db)):
         "c_user": str(currentuname).strip(),
         "viewuserevent": viewuserevent,
         "translate": bound_translate,
-        "trending_events": trending_events
+        "trending_events": trending_events,
+        "user_language": user_lang
     })
 
 @app.post("/viewyourevents/{username}")
@@ -761,8 +776,8 @@ async def dummyevent(request: Request):
     request.session["description"] = "Join us for a community tree plantation drive to make our neighborhood greener and healthier!"
     request.session["location"] = random.choice(["Central Park", "Community Center", "City Hall", "Riverside Park", "Downtown Square"])
     request.session["category"] = random.choice(["Tree Plantation", "Blood Donation", "Cleanliness Drive"])
-    request.session["eventstartdate"] = f"{random.randint(2025, 2028)}-{random.randint(10, 12):02d}-{random.randint(10, 28):02d}"
-    request.session["enddate"] = f"{random.randint(2025, 2028)}-{random.randint(10, 12):02d}-{random.randint(10, 28):02d}"
+    request.session["eventstartdate"] = f"{random.randint(2026, 2028)}-{random.randint(10, 12):02d}-{random.randint(10, 28):02d}"
+    request.session["enddate"] = f"{random.randint(2026, 2028)}-{random.randint(10, 12):02d}-{random.randint(10, 28):02d}"
     request.session["starttime"] = f"{random.randint(10, 12)}:{random.randint(10, 59)}"
     request.session["endtime"] = f"{random.randint(10, 12)}:{random.randint(10, 59)}"
     return RedirectResponse(url="/#add", status_code=303)
@@ -916,13 +931,11 @@ async def add_group_msg(sid, data):
 async def add_like(sid, data):
     eventid = data["eventid"]
     byuser = data["byuser"]
-    like_type = data["type"]  # renamed from 'type' to avoid shadowing builtin
+    like_type = data["type"]
 
     loop = asyncio.get_event_loop()
-    new_likes = 0
 
     def _update_like():
-        nonlocal new_likes
         db, c = get_socket_db()
         try:
             ud = c.execute("SELECT * FROM userdetails WHERE username=?", (byuser,)).fetchone()
@@ -939,13 +952,19 @@ async def add_like(sid, data):
 
             new_likes_str = ",".join(liked_events)
             c.execute("UPDATE userdetails SET likes=? WHERE username=?", (new_likes_str, byuser))
-            new_likes = c.execute("SELECT likes FROM eventdetail WHERE eventid=?", (eventid,)).fetchone()["likes"]
+            new_likes_val = c.execute("SELECT likes FROM eventdetail WHERE eventid=?", (eventid,)).fetchone()["likes"]
             db.commit()
+            print(f"Like update: ID = {eventid}, Likes: {new_likes_val}, Type = {like_type}")
+            return new_likes_val
         finally:
             db.close()
 
-    await loop.run_in_executor(None, _update_like)
+    # Run DB update in executor thread and capture the returned like count
+    new_likes = await loop.run_in_executor(None, _update_like)
+
+    # Emit using the value returned from the executor
     await sio.emit("update_like", {"eventid": eventid, "likes": new_likes})
+
 
 # --- Final ASGI App: Single SocketIO mount ---
 app = socketio.ASGIApp(sio, app)

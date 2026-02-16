@@ -179,6 +179,26 @@
         height: 20px;
     }
 
+    .share-btn.translate-active {
+        color: var(--primary-color, #007bff);
+        background-color: rgba(0, 123, 255, 0.12);
+    }
+
+    .share-btn.translate-loading {
+        opacity: 0.55;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .spinner-svg {
+        animation: spinner-rotate 0.85s linear infinite;
+        transform-origin: center;
+    }
+
+    @keyframes spinner-rotate {
+        100% { transform: rotate(360deg); }
+    }
+
     @media (max-width: 768px) {
         .filter-header-mobile {
             display: flex;
@@ -254,21 +274,25 @@
     <h3>🔥 {{ translate("Trending Now") }}</h3>
     <div class="campaign-grid">
         {% for e in trending_events %}
-            <div class="campaign-card trending-card" style="border-color: #f59e0b; background: rgba(245, 158, 11, 0.05);">
+            <div class="campaign-card trending-card"
+                 style="border-color: #f59e0b; background: rgba(245, 158, 11, 0.05);"
+                 data-eventid="{{ e.eventid }}"
+                 data-eventname="{{ e.eventname|e }}"
+                 data-description="{{ e.description|e }}"
+                 data-location="{{ e.location|e }}">
                 <div style="position: absolute; top: 1rem; right: 1rem; background: #f59e0b; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;">TOP RATED</div>
 
                 <span class="campaign-id">#{{ e.eventid }}</span>
-                <h4>{{ translate(e.eventname) }}</h4>
+                <h4 class="card-title-text">{{ e.eventname }}</h4>
 
-                {% set eventdesc = translate(e.description, save_file=False) %}
                 <p id="event-desc-wrapper-trending-{{e.eventid}}">
                     {% if e.description|length > 100 %}
-                        <span id="desc-short-trending-{{e.eventid}}">{{ eventdesc[:100] }}...</span>
-                        <span id="desc-full-trending-{{e.eventid}}" style="display:none">{{ eventdesc }}</span>
+                        <span id="desc-short-trending-{{e.eventid}}">{{ e.description[:100] }}...</span>
+                        <span id="desc-full-trending-{{e.eventid}}" style="display:none">{{ e.description }}</span>
                         <button id="read-more-btn-trending-{{e.eventid}}" class="read-more-btn" onclick="toggleDescription('trending-{{e.eventid}}', 'more')">{{ translate("Read More") }}</button>
                         <button id="read-less-btn-trending-{{e.eventid}}" class="read-more-btn" style="display:none" onclick="toggleDescription('trending-{{e.eventid}}', 'less')">{{ translate("Read Less") }}</button>
                     {% else %}
-                        {{ eventdesc }}
+                        {{ e.description }}
                     {% endif %}
                 </p>
 
@@ -277,8 +301,8 @@
                 <p><b>{{ translate("From Date and Time:") }}</b> {{ translate(eventstartdate) }} | {{ e.eventstarttime }}<br><b>{{ translate("Till Date and Time:") }}</b> {{ translate(eventeventenddate) }} | {{ e.eventendtime }}</p>
 
                 <p><b>{{ translate("Location:") }}</b>
-                    <a href="https://www.google.com/maps/search/?api=1&query={{ e.location }}" target="_blank" style="color: var(--primary-color); text-decoration: none;">
-                        📍 {{ translate(e.location) }} ↗
+                    <a href="[https://www.google.com/maps/search/?api=1&query=](https://www.google.com/maps/search/?api=1&query=){{ e.location }}" target="_blank" style="color: var(--primary-color); text-decoration: none;">
+                        📍 <span class="card-location-text">{{ e.location }}</span> ↗
                     </a>
                 </p>
 
@@ -287,7 +311,7 @@
                         {% if c_user == "None" %}
                             {% set loginalertmsg = translate("Login to like this event.") %}
                             <button id="likeevent-trending-{{e.eventid}}" class="like-btn" onclick="showAlert('{{ loginalertmsg }}', 'warning')">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                 </svg>
                             </button>
@@ -295,13 +319,13 @@
                             {% set userliked = userdetails['likes'].split(",") if userdetails['likes'] else [] %}
                             {% if e.eventid|string in userliked %}
                                 <button id="likeevent-trending-{{e.eventid}}" class="like-btn liked" onclick="changelike({{e.eventid}}, 'remove')">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                     </svg>
                                 </button>
                             {% else %}
                                 <button id="likeevent-trending-{{e.eventid}}" class="like-btn" onclick="changelike({{e.eventid}}, 'add')">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                     </svg>
                                 </button>
@@ -312,20 +336,31 @@
 
                     <div style="display: flex; gap: 8px; margin-left: 10px;">
                         <button onclick="openShareModal('{{e.eventname|e}}', '{{e.eventid}}', '{{eventstartdate}}', '{{e.eventstarttime}}', '{{e.location|e}}', '{{e.description|e}}')" class="share-btn" title="{{ translate('Share Event') }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
                                 <polyline points="16 6 12 2 8 6"></polyline>
                                 <line x1="12" y1="2" x2="12" y2="15"></line>
                             </svg>
                         </button>
                         <a href="/download_ics/{{ e.eventid }}" class="share-btn" title="{{ translate('Add to Calendar') }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                 <line x1="16" y1="2" x2="16" y2="6"></line>
                                 <line x1="8" y1="2" x2="8" y2="6"></line>
                                 <line x1="3" y1="10" x2="21" y2="10"></line>
                             </svg>
                         </a>
+                        {% if user_language != "en" %}
+                        <button class="share-btn translate-btn"
+                                onclick="toggleTranslate(this)"
+                                title="{{ translate('Translate Event') }}">
+                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                        </button>
+                        {% endif %}
                     </div>
 
                     <div style="flex-grow: 1;"></div>
@@ -377,7 +412,7 @@
                         </select>
                     </form>
                     <button type="button" class="sort-direction-btn" onclick="toggleSortDirection(this)" title="{{ translate('Reverse Order') }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="7 10 12 15 17 10"></polyline>
                         </svg>
                     </button>
@@ -386,19 +421,22 @@
 
             <div class="campaign-grid">
                 {% for e in viewevents|sort(attribute=sortby) %}
-                    <div class="campaign-card {% if not viewyourevents and loop.index > 4 %}hidden{% endif %}">
+                    <div class="campaign-card {% if not viewyourevents and loop.index > 4 %}hidden{% endif %}"
+                         data-eventid="{{ e.eventid }}"
+                         data-eventname="{{ e.eventname|e }}"
+                         data-description="{{ e.description|e }}"
+                         data-location="{{ e.location|e }}">
                         <span class="campaign-id">#{{ e.eventid }}</span>
-                        <h4>{{ translate(e.eventname) }}</h4>
-                        {% set eventdesc = translate(e.description, save_file=False) %}
+                        <h4 class="card-title-text">{{ e.eventname }}</h4>
 
                         <p id="event-desc-wrapper-{{e.eventid}}">
                             {% if e.description|length > 100 %}
-                                <span id="desc-short-{{e.eventid}}">{{ eventdesc[:100] }}...</span>
-                                <span id="desc-full-{{e.eventid}}" style="display:none">{{ eventdesc }}</span>
+                                <span id="desc-short-{{e.eventid}}">{{ e.description[:100] }}...</span>
+                                <span id="desc-full-{{e.eventid}}" style="display:none">{{ e.description }}</span>
                                 <button id="read-more-btn-{{e.eventid}}" class="read-more-btn" onclick="toggleDescription({{e.eventid}}, 'more')">{{ translate("Read More") }}</button>
                                 <button id="read-less-btn-{{e.eventid}}" class="read-more-btn" style="display:none" onclick="toggleDescription({{e.eventid}}, 'less')">{{ translate("Read Less") }}</button>
                             {% else %}
-                                {{ eventdesc }}
+                                {{ e.description }}
                             {% endif %}
                         </p>
 
@@ -407,8 +445,8 @@
                         <p><b>{{ translate("From Date and Time:") }}</b> {{ translate(eventstartdate) }} | {{ e.eventstarttime }}<br><b>{{ translate("Till Date and Time:") }}</b> {{ translate(eventeventenddate) }} | {{ e.eventendtime }}</p>
 
                         <p><b>{{ translate("Location:") }}</b>
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ e.location }}" target="_blank" style="color: var(--primary-color); text-decoration: none;">
-                                📍 {{ translate(e.location) }} ↗
+                            <a href="[https://www.google.com/maps/search/?api=1&query=](https://www.google.com/maps/search/?api=1&query=){{ e.location }}" target="_blank" style="color: var(--primary-color); text-decoration: none;">
+                                📍 <span class="card-location-text">{{ e.location }}</span> ↗
                             </a>
                         </p>
 
@@ -417,7 +455,7 @@
                                 {% if c_user == "None" %}
                                     {% set loginalertmsg = translate("Login to like this event.") %}
                                     <button id="likeevent-{{e.eventid}}" class="like-btn" onclick="showAlert('{{ loginalertmsg }}', 'warning')">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                         </svg>
                                     </button>
@@ -425,13 +463,13 @@
                                     {% set userliked = userdetails['likes'].split(",") if userdetails['likes'] else [] %}
                                     {% if e.eventid|string in userliked %}
                                         <button id="likeevent-{{e.eventid}}" class="like-btn liked" onclick="changelike({{e.eventid}}, 'remove')">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                             </svg>
                                         </button>
                                     {% else %}
                                         <button id="likeevent-{{e.eventid}}" class="like-btn" onclick="changelike({{e.eventid}}, 'add')">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                                             </svg>
                                         </button>
@@ -441,8 +479,8 @@
                             </div>
 
                             <div style="display: flex; gap: 8px; margin-left: 10px;">
-                                <button onclick="openShareModal('{{e.eventname|e}}', '{{e.eventid}}', '{{eventstartdate}}', '{{e.eventstarttime}}', '{{e.location|e}}', '{{e.description|e}}')" class="share-btn" title="{{ translate('Share Event') }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <button onclick="openShareModal('{{ e.eventname|e}}', '{{e.eventid}}', '{{eventstartdate}}', '{{e.eventstarttime}}', '{{e.location|e}}', '{{e.description|e}}')" class="share-btn" title="{{ translate('Share Event') }}">
+                                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <circle cx="18" cy="5" r="3"></circle>
                                         <circle cx="6" cy="12" r="3"></circle>
                                         <circle cx="18" cy="19" r="3"></circle>
@@ -451,13 +489,24 @@
                                     </svg>
                                 </button>
                                 <a href="/download_ics/{{ e.eventid }}" class="share-btn" title="{{ translate('Add to Calendar') }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                                         <line x1="16" y1="2" x2="16" y2="6"></line>
                                         <line x1="8" y1="2" x2="8" y2="6"></line>
                                         <line x1="3" y1="10" x2="21" y2="10"></line>
                                     </svg>
                                 </a>
+                                {% if user_language != "en" %}
+                                <button class="share-btn translate-btn"
+                                        onclick="toggleTranslate(this)"
+                                        title="{{ translate('Translate Event') }}">
+                                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                    </svg>
+                                </button>
+                                {% endif %}
                             </div>
 
                             <div style="flex-grow: 1;"></div>
@@ -532,6 +581,116 @@
 var selectedCategories = new Set(['all']);
 var globalSearchTerm = '';
 var currentShareEvent = {};
+
+// Globe icon SVG (normal state)
+const GLOBE_SVG = `<svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="2" y1="12" x2="22" y2="12"></line>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+</svg>`;
+
+// Spinner SVG shown while fetching
+const SPINNER_SVG = `<svg class="spinner-svg" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+</svg>`;
+
+async function toggleTranslate(btn) {
+    const card = btn.closest('.campaign-card');
+    if (!card) return;
+
+    // --- RESTORE (second click) ---
+    if (btn.classList.contains('translate-active')) {
+        const rawName     = card.dataset.eventname;
+        const rawDesc     = card.dataset.description;
+        const rawLocation = card.dataset.location;
+        const eventId     = card.dataset.eventid;
+
+        // Restore title
+        const titleEl = card.querySelector('.card-title-text');
+        if (titleEl) titleEl.textContent = rawName;
+
+        // Restore description spans
+        const shortSpan = card.querySelector(`#desc-short-${eventId}, #desc-short-trending-${eventId}`);
+        const fullSpan  = card.querySelector(`#desc-full-${eventId},  #desc-full-trending-${eventId}`);
+        const descWrap  = card.querySelector(`#event-desc-wrapper-${eventId}, #event-desc-wrapper-trending-${eventId}`);
+        if (shortSpan) shortSpan.textContent = rawDesc.slice(0, 100) + (rawDesc.length > 100 ? '...' : '');
+        if (fullSpan)  fullSpan.textContent  = rawDesc;
+        // Plain (no read-more) desc case
+        if (descWrap && !shortSpan) {
+            // preserve any child buttons (read-more), update only text nodes
+            Array.from(descWrap.childNodes).forEach(n => {
+                if (n.nodeType === Node.TEXT_NODE) n.textContent = rawDesc;
+            });
+        }
+
+        // Restore location span
+        const locEl = card.querySelector('.card-location-text');
+        if (locEl) locEl.textContent = rawLocation;
+
+        btn.classList.remove('translate-active');
+        btn.innerHTML = GLOBE_SVG;
+        btn.title = '{{ translate("Translate Event") }}';
+        return;
+    }
+
+    // --- TRANSLATE (first click) ---
+    const rawName     = card.dataset.eventname;
+    const rawDesc     = card.dataset.description;
+    const rawLocation = card.dataset.location;
+    const eventId     = card.dataset.eventid;
+
+    // Show spinner, disable button
+    btn.classList.add('translate-loading');
+    btn.innerHTML = SPINNER_SVG;
+
+    try {
+        const resp = await fetch('/translate_event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                eventname:   rawName,
+                description: rawDesc,
+                location:    rawLocation
+            })
+        });
+
+        if (!resp.ok) throw new Error('Translation request failed');
+        const data = await resp.json();
+
+        // Swap title
+        const titleEl = card.querySelector('.card-title-text');
+        if (titleEl) titleEl.textContent = data.name || rawName;
+
+        // Swap description spans
+        const shortSpan = card.querySelector(`#desc-short-${eventId}`) || card.querySelector(`#desc-short-trending-${eventId}`);
+        const fullSpan  = card.querySelector(`#desc-full-${eventId}`)  || card.querySelector(`#desc-full-trending-${eventId}`);
+        const descWrap  = card.querySelector(`#event-desc-wrapper-${eventId}`) || card.querySelector(`#event-desc-wrapper-trending-${eventId}`);
+        const translatedDesc = data.description || rawDesc;
+        if (shortSpan) shortSpan.textContent = translatedDesc.slice(0, 100) + (translatedDesc.length > 100 ? '...' : '');
+        if (fullSpan)  fullSpan.textContent  = translatedDesc;
+        if (descWrap && !shortSpan) {
+            Array.from(descWrap.childNodes).forEach(n => {
+                if (n.nodeType === Node.TEXT_NODE) n.textContent = translatedDesc;
+            });
+        }
+
+        // Swap location span
+        const locEl = card.querySelector('.card-location-text');
+        if (locEl) locEl.textContent = data.location || rawLocation;
+
+        // Mark as translated, restore globe icon with active style
+        btn.classList.add('translate-active');
+        btn.innerHTML = GLOBE_SVG;
+        btn.title = '{{ translate("Show Original") }}';
+
+    } catch (err) {
+        console.error('Translation failed:', err);
+        btn.innerHTML = GLOBE_SVG;
+        if (typeof showAlert === 'function') showAlert('Translation failed. Please try again.', 'error');
+    } finally {
+        btn.classList.remove('translate-loading');
+    }
+}
 
 function toggleMobileFilterMenu() {
     const container = document.getElementById('filterButtonsContainer');
@@ -744,4 +903,54 @@ function generateImage() {
     });
     closeShareModal();
 }
+
+ const socket = io();
+
+ function changelike(eventid, type) {
+     // Select ALL like buttons and count spans for this eventid
+     // (handles both regular cards and trending cards)
+     const btns = document.querySelectorAll(
+         `#likeevent-${eventid}, #likeevent-trending-${eventid}`
+     );
+     const countSpans = document.querySelectorAll(
+         `#eventlike-${eventid}, #eventlike-trending-${eventid}`
+     );
+
+     // Optimistic UI update
+     countSpans.forEach(countSpan => {
+         let currentCount = parseInt(countSpan.innerText) || 0;
+         if (type === 'add') {
+             countSpan.innerText = currentCount + 1;
+         } else {
+             countSpan.innerText = Math.max(0, currentCount - 1);
+         }
+     });
+
+     btns.forEach(btn => {
+         if (type === 'add') {
+             btn.classList.add('liked');
+             btn.setAttribute('onclick', `changelike(${eventid}, 'remove')`);
+         } else {
+             btn.classList.remove('liked');
+             btn.setAttribute('onclick', `changelike(${eventid}, 'add')`);
+         }
+     });
+
+     socket.emit("addeventlike", {
+         eventid: eventid,
+         byuser: "{{ c_user }}",
+         type: type
+     });
+ }
+
+ socket.on("update_like", data => {
+     console.log("LIKE UPDATE RECEIVED", data);
+     // Update ALL count spans for this event (regular + trending)
+     const countSpans = document.querySelectorAll(
+         `#eventlike-${data.eventid}, #eventlike-trending-${data.eventid}`
+     );
+     countSpans.forEach(span => {
+         span.innerText = data.likes;
+     });
+ });
 </script>
