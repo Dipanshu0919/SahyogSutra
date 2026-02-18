@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>User Profile | DEcoCamp</title>
+<title>User Profile | SahyogSutra</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
-    :root { --primary-color: #3b82f6; --primary-hover: #2563eb; --bg-dark: #0f172a; --bg-light: #1e293b; --text-color: #f1f5f9; --text-muted: #94a3b8; --border-color: rgba(148,163,184,0.2); --radius: 12px; --max-width: 1500px; --ai-gradient: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); }
+    :root { --primary-color: #d76a1e; --primary-hover: #b85a14; --accent-gold: #c89d23; --accent-gold-light: #f0c84b; --bg-dark: #0a0c20; --bg-light: #141828; --text-color: #f1f5f9; --text-muted: #94a3b8; --border-color: rgba(200,157,35,0.18); --radius: 12px; --max-width: 1500px; --ai-gradient: linear-gradient(135deg, #d76a1e, #c89d23, #3b82f6); }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Inter',sans-serif; background: var(--bg-dark); color: var(--text-color); line-height: 1.6; overflow-x: hidden; }
     .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(15,23,42,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); padding: 0 1rem; }
     .nav-inner { display: flex; align-items: center; justify-content: space-between; max-width: var(--max-width); margin: 0 auto; height: 70px; }
     .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 20px; color: var(--text-color); text-decoration: none; }
-    .logo { width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg,var(--primary-color),#60a5fa); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+    .logo { width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg,var(--primary-color),#f0c84b); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; box-shadow: 0 4px 12px rgba(215,106,30,0.35); }
     .brand-text div:first-child { font-size: 16px; }
     .brand-text div:last-child { font-size: 12px; color: var(--text-muted); font-weight: 500; }
     .navlink { text-decoration: none; color: var(--text-muted); padding: 8px 12px; border-radius: 8px; transition: color .2s,background .2s; font-weight: 600; font-size: 0.95rem; }
@@ -26,7 +26,7 @@
     .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-color); }
     .btn-outline:hover { background: var(--bg-light); border-color: var(--text-muted); }
     .profile-card { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden; animation: fadeIn 0.5s ease-out; }
-    .profile-banner { height: 150px; background: linear-gradient(135deg, var(--bg-dark), #1e293b); position: relative; border-bottom: 1px solid var(--border-color); }
+    .profile-banner { height: 150px; background: linear-gradient(135deg, #0a0c20, #1a1208, #2a1a0a); position: relative; border-bottom: 1px solid var(--border-color); }
     .profile-content { padding: 0 2rem 2rem; position: relative; text-align: center; }
     /* New Avatar Style */
     .profile-avatar-img { width: 120px; height: 120px; border-radius: 50%; border: 6px solid var(--bg-light); margin: -60px auto 1.5rem; display: block; background: #fff; object-fit: cover; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
@@ -51,10 +51,10 @@
 <header class="navbar">
     <div class="nav-inner">
         <a href="/" class="brand">
-            <div class="logo">EC</div>
+            <img src="/static/sahyog_sutra_logo.png" alt="Sahyog Sutra Logo" style="width:44px;height:44px;border-radius:8px;object-fit:cover;box-shadow:0 4px 12px rgba(215,106,30,0.35);">
             <div class="brand-text">
-                <div>{{ translate("DEcoCamp") }}</div>
-                <div>{{ translate("A Greener Tomorrow!") }}</div>
+                <div style="background:linear-gradient(90deg,#f8ebb8,#d76a1e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700;">{{ translate("Sahyog Sutra") }}</div>
+                <div>{{ translate("Weaving Communities Together") }}</div>
             </div>
         </a>
         <div class="nav-links-container">

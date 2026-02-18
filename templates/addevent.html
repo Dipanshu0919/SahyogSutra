@@ -17,7 +17,7 @@
 
     /* Form Container Styling */
     .add-event-form-container {
-        background: var(--bg-light, #1e293b);
+        background: var(--bg-light, #141828);
         border: 1px solid var(--border-color, #334155);
         border-radius: 16px;
         padding: 2rem;
@@ -59,7 +59,7 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: var(--primary-color, #3b82f6);
+        color: var(--primary-color, #d76a1e);
         margin-top: -2px; /* Slight optical adjustment */
     }
 
@@ -75,14 +75,14 @@
     }
 
     .info-icon-wrapper:hover .info-icon-svg {
-        stroke: var(--primary-hover, #60a5fa);
+        stroke: var(--primary-hover, #f0c84b);
     }
 
     /* Tooltip Popup */
     .tooltip-text {
         visibility: hidden;
         width: 220px;
-        background-color: #0f172a; /* Dark background */
+        background-color: #0a0c20; /* Dark background */
         color: #f1f5f9;
         text-align: center;
         border: 1px solid var(--border-color, #334155);
@@ -142,7 +142,7 @@
     .styled-input {
         width: 100%;
         padding: 0.75rem 1rem;
-        background-color: var(--bg-dark, #0f172a);
+        background-color: var(--bg-dark, #0a0c20);
         border: 1px solid var(--border-color, #334155);
         border-radius: 8px;
         color: var(--text-color, #f1f5f9);
@@ -153,8 +153,8 @@
 
     .styled-input:focus {
         outline: none;
-        border-color: var(--primary-color, #3b82f6);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        border-color: var(--primary-color, #d76a1e);
+        box-shadow: 0 0 0 3px rgba(215, 106, 30, 0.2);
     }
 
     /* 2-Column Row for Inputs */
@@ -209,7 +209,7 @@
 
     /* Category Section */
     .category-box {
-        background: var(--bg-dark, #0f172a);
+        background: var(--bg-dark, #0a0c20);
         border: 1px solid var(--border-color, #334155);
         border-radius: 12px;
         padding: 1.5rem;
@@ -224,7 +224,7 @@
     }
 
     .cat-chip-btn {
-        background: var(--bg-light, #1e293b);
+        background: var(--bg-light, #141828);
         border: 1px solid var(--border-color, #475569);
         color: var(--text-muted, #94a3b8);
         padding: 6px 14px;
@@ -236,13 +236,13 @@
     }
 
     .cat-chip-btn:hover {
-        border-color: var(--primary-color, #3b82f6);
+        border-color: var(--primary-color, #d76a1e);
         color: var(--text-color, #fff);
     }
 
     .cat-chip-btn.active {
-        background: var(--primary-color, #3b82f6);
-        border-color: var(--primary-color, #3b82f6);
+        background: var(--primary-color, #d76a1e);
+        border-color: var(--primary-color, #d76a1e);
         color: #fff;
     }
 
@@ -250,7 +250,7 @@
     .event-search-box {
         width: 100%;
         padding: 10px 12px 10px 35px;
-        background: var(--bg-light, #1e293b) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E") no-repeat 10px center;
+        background: var(--bg-light, #141828) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E") no-repeat 10px center;
         border: 1px solid var(--border-color, #475569);
         border-radius: 8px;
         color: var(--text-color, #fff);
@@ -258,7 +258,7 @@
         display: block; /* Always visible now */
     }
 
-    .event-search-box:focus { outline: none; border-color: var(--primary-color, #3b82f6); }
+    .event-search-box:focus { outline: none; border-color: var(--primary-color, #d76a1e); }
 
     /* Scrollable Event List */
     .event-list-panel {
@@ -288,7 +288,7 @@
     }
 
     .event-radio-label:hover { background: rgba(255,255,255,0.05); }
-    .event-radio-label.selected { background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); color: #60a5fa; font-weight: 600; }
+    .event-radio-label.selected { background: rgba(215, 106, 30, 0.15); border-color: rgba(215, 106, 30, 0.3); color: #f0c84b; font-weight: 600; }
 
     /* Helper text in list items */
     .event-cat-tag {
@@ -306,8 +306,8 @@
 
     /* Dropdown Tips Styling */
     .tips-dropdown {
-        background: rgba(59, 130, 246, 0.08);
-        border: 1px solid rgba(59, 130, 246, 0.3);
+        background: rgba(215, 106, 30, 0.08);
+        border: 1px solid rgba(215, 106, 30, 0.3);
         border-radius: 12px;
         overflow: hidden;
         transition: all 0.3s ease;
@@ -318,7 +318,7 @@
         padding: 1rem 1.5rem;
         cursor: pointer;
         font-weight: 600;
-        color: var(--primary-color, #60a5fa);
+        color: var(--primary-color, #f0c84b);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -339,7 +339,7 @@
     .tips-content {
         padding: 0 1.5rem 1.5rem 1.5rem;
         color: var(--text-muted, #94a3b8);
-        border-top: 1px solid rgba(59, 130, 246, 0.2);
+        border-top: 1px solid rgba(215, 106, 30, 0.2);
         animation: slideDown 0.3s ease-out;
     }
 
@@ -367,7 +367,7 @@
 
     /* Buttons */
     .form-actions { display: flex; gap: 1rem; margin-top: 2rem; }
-    .btn-submit { flex: 2; padding: 12px; background: var(--primary-color, #3b82f6); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-submit { flex: 2; padding: 12px; background: var(--primary-color, #d76a1e); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
     .btn-submit:hover { background: var(--primary-hover, #2563eb); }
     .btn-reset { flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border-color, #475569); color: var(--text-muted, #94a3b8); border-radius: 8px; cursor: pointer; }
     .btn-reset:hover { background: rgba(255,255,255,0.05); color: white; }

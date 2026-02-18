@@ -1,3 +1,4 @@
+import ast
 import os
 import json
 import random
@@ -271,16 +272,24 @@ async def translate_event(request: Request):
     data = await request.json()
     lang = request.session.get("lang", "en")
 
-    def transl(text, lang):
+    print(data.items())
+
+    output = {}
+
+    def transl(text, lang, key):
         t = Translator()
         translated = t.translate(text, dest=lang).text
-        return translated
+        output[key] = translated
 
-    output = {
-        "name": transl(data["eventname"], lang),
-        "description": transl(data["description"], lang),
-        "location": transl(data["location"], lang),
-    }
+    threads = []
+    for field, value in data.items():
+        threads.append(threading.Thread(target=transl, args=(value, lang, field)))
+
+    for x in threads:
+        x.start()
+    for x in threads:
+        x.join()
+
     return JSONResponse(content=output)
 
 # --- Exception Handlers ---
@@ -367,10 +376,38 @@ async def home(request: Request, db: AsyncDB = Depends(get_db)):
         "admin_stats": admin_stats
     })
 
-@app.post("/sendsignupotp")
-async def sendotp(request: Request, email: str = Form(...), db: AsyncDB = Depends(get_db)):
+
+@app.post("/forgetpassword")
+async def forgetpassword(request: Request, db: AsyncDB = Depends(get_db)):
+    pass
+    formdata = await request.form()
+    otp = str(request.session.get("forgetotp"))
+    formotp = str(formdata.get("forgetotp"))
+    formemail = formdata.get("forgetemail")
+    formpassword = formdata.get("newpassword")
+    cpassword = formdata.get("confirmnewpassword")
+
+    splited = otp.split("_")
+
+    user_mail = await db.execute("SELECT email FROM userdetails WHERE email=(?) OR username=(?)", (formemail,formemail))
+    email = await db.fetchone()
+    email = email["email"]
+
+    if (splited[0] != formotp) or (splited[1] != email):
+        return Response(content="Wrong OTP!", media_type="text/plain")
+
+    if formpassword != cpassword:
+        return Response(content="Wrong Confirm Password!", media_type="text/plain")
+
+    await db.execute("UPDATE userdetails SET password=(?) WHERE email=(?)", (cpassword, email))
+    request.session.pop("forgetotp")
+    return Response(content="Password Change Success!", media_type="text/plain")
+
+
+@app.post("/sendforgetotp")
+async def sendforgetotp(request: Request, email: str = Form(...), db: AsyncDB = Depends(get_db)):
     client_ip = request.client.host
-    allowed, wait = check_rate_limit(client_ip, window=30)
+    allowed, wait = check_rate_limit(client_ip, window=60)
     if not allowed:
         return Response(
             content=f"Please wait {wait} seconds before requesting another OTP.",
@@ -378,15 +415,40 @@ async def sendotp(request: Request, email: str = Form(...), db: AsyncDB = Depend
             status_code=429
         )
 
-    otp = random.randint(1111, 9999)
-    request.session["signupotp"] = otp
+    getemail = await db.execute("SELECT email FROM userdetails WHERE email=(?) OR username=(?)", (email,email))
+    getemail = await db.fetchone()
+
+    if not getemail:
+        return Response(content="Email/Username doesnt exists! Please try different email.", media_type="text/plain")
+
+    email = getemail["email"]
+    otp = random.randint(1111,9999)
+    request.session["forgetotp"] = f"{otp}_{email}"
+    print(request.session["forgetotp"])
+    sendmailthread(email, "Reset Password OTP For Sahyog Sutra", f"Use this OTP to reset your password in the Sahyog Setu!\n\nOTP: {otp}")
+    return Response(content=f"OTP Sent to {email}! Please check spam folder if can't find it.", media_type="text/plain")
+
+
+@app.post("/sendsignupotp")
+async def sendotp(request: Request, email: str = Form(...), db: AsyncDB = Depends(get_db)):
+    client_ip = request.client.host
+    allowed, wait = check_rate_limit(client_ip, window=60)
+    if not allowed:
+        return Response(
+            content=f"Please wait {wait} seconds before requesting another OTP.",
+            media_type="text/plain",
+            status_code=429
+        )
 
     await db.execute("SELECT * FROM userdetails WHERE email=?", (email,))
     checkexists = await db.fetchone()
     if checkexists:
         return Response(content="Email already exists! Please try different email.", media_type="text/plain")
 
-    sendmailthread(email, "Signup OTP", f"Your signup OTP is {otp}.\nUse it to sign up in DEcoCamp\n\nThankyou :)")
+    otp = random.randint(1111, 9999)
+    request.session["signupotp"] = f"{otp}_{email}"
+
+    sendmailthread(email, "Signup OTP For Sahyog Sutra", f"Welome Sahyogi! \nYour signup OTP is {otp}.\nUse it to sign up in SahyogSutra\n\nThankyou :)")
     return Response(content=f"OTP Sent to {email}! Please check spam folder if can't find it.", media_type="text/plain")
 
 @app.post("/setlanguage/{lang}")
@@ -397,7 +459,7 @@ async def setlanguage(request: Request, lang: str):
 @app.post("/generate_ai_description")
 async def generate_ai_description(request: Request):
     client_ip = request.client.host
-    allowed, wait = check_rate_limit(client_ip, window=10)
+    allowed, wait = check_rate_limit(client_ip, window=60)
     if not allowed:
         return Response(content="Please wait a moment before generating again.", media_type="text/plain", status_code=429)
 
@@ -449,10 +511,16 @@ async def group_chat_from_event(request: Request, eventid: int, db: AsyncDB = De
     if not eventdetail:
         return Response(content="No such event found.", media_type="text/plain")
 
-    await db.execute("SELECT * FROM messages WHERE eventid=? ORDER BY time ASC", (eventid,))
-    all_msgs = await db.fetchall()
+    await db.execute("SELECT * FROM messages2 WHERE eventid=?", (eventid,))
+    all_msgs_row = await db.fetchone()
+    all_msgs_str = all_msgs_row["msgs"] if all_msgs_row else None
 
-    messages = [(x["username"], x["message"], x["time"]) for x in all_msgs] if all_msgs else []
+    if all_msgs_str:
+        all_msgs = ast.literal_eval(all_msgs_str)
+    else:
+        all_msgs = []
+
+    messages = [(x[0], x[1], x[2]) for x in all_msgs] if all_msgs else []
 
     return templates.TemplateResponse(request, "groupchat.html", {
         "messages": messages,
@@ -594,6 +662,7 @@ async def signup(request: Request, db: AsyncDB = Depends(get_db)):
     name = form_data.get("nameofuser")
     email = form_data.get("email")
     otp = form_data.get("signupotp")
+    session_otp = str(request.session.get("signupotp"))
 
     # Run both existence checks in parallel
     results = await run_queries_parallel(
@@ -605,7 +674,7 @@ async def signup(request: Request, db: AsyncDB = Depends(get_db)):
     if results[1]:
         return Response(content="Email Already Exists", media_type="text/plain")
 
-    if str(request.session.get("signupotp")) != str(otp).strip():
+    if (session_otp.split("_")[0] != str(otp).strip()) or (session_otp.split("_")[1] != email):
         return Response(content="Wrong Signup OTP", media_type="text/plain")
     elif password != cpassword:
         return Response(content="Wrong Confirm Password", media_type="text/plain")
@@ -843,9 +912,9 @@ async def download_ics(eventid: int, db: AsyncDB = Depends(get_db)):
 
     ics_content = f"""BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//DEcoCamp//Events//EN
+PRODID:-//SahyogSutra//Events//EN
 BEGIN:VEVENT
-UID:decocamp-{eventid}
+UID:SahyogSutra-{eventid}
 DTSTAMP:{datetime.datetime.now().strftime('%Y%m%dT%H%M%S')}
 DTSTART:{start_dt}
 DTEND:{end_dt}
@@ -894,7 +963,7 @@ async def export_data(request: Request, db: AsyncDB = Depends(get_db)):
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=decocamp_data_{username}.csv"}
+        headers={"Content-Disposition": f"attachment; filename=SahyogSutra_data_{username}.csv"}
     )
 
 # --- SocketIO Events ---
@@ -911,10 +980,15 @@ async def add_group_msg(sid, data):
     def _insert():
         db, c = get_socket_db()
         try:
-            c.execute(
-                "INSERT INTO messages(eventid, username, message, time) VALUES(?, ?, ?, ?)",
-                (eventid, username, message, msg_time)
-            )
+            find = c.execute("SELECT * FROM messages2 WHERE eventid=(?)", (eventid,)).fetchone()
+            if not find:
+                c.execute("INSERT INTO messages2(eventid, msgs) VALUES(?, ?)", (eventid, "[]"))
+                find = c.execute("SELECT * FROM messages2 WHERE eventid=(?)", (eventid,)).fetchone()
+            msg = find["msgs"]
+            msg = ast.literal_eval(msg)
+            updated = (username, message, msg_time)
+            msg.append(updated)
+            c.execute("UPDATE messages2 SET msgs=(?) WHERE eventid=(?)", (str(msg), eventid))
             db.commit()
         finally:
             db.close()
