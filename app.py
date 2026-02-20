@@ -379,7 +379,7 @@ async def home(request: Request, db: AsyncDB = Depends(get_db)):
 @app.get("/event/{eventid}")
 async def eventfromeventid(request: Request, eventid: int, db: AsyncDB = Depends(get_db)):
     session = request.session
-    await db.execute("SELECT * FROM eventdetails WHERE eventid=(?)", (eventid, ))
+    await db.execute("SELECT * FROM eventdetail WHERE eventid=(?)", (eventid, ))
     getevent = await db.fetchone()
     isadmin = False
     currentuname = session.get("username")
@@ -399,6 +399,7 @@ async def eventfromeventid(request: Request, eventid: int, db: AsyncDB = Depends
         "isadmin": bool(isadmin),
         "c_user": str(currentuname).strip(),
         "eventdetails": getevent,
+        "translate": bound_translate,
     })
 
 @app.post("/forgetpassword")

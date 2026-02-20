@@ -176,8 +176,13 @@
 
                     <div style="flex-grow: 1;"></div>
 
+                    <button class="campaign-tag" onclick="openEventModal({{ e.eventid }})" title="{{ translate('View Event Details') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
                     <button class="campaign-tag" onclick="openeventchat({{ e.eventid }})">{{ translate('Chat') }}</button>
-                    <button class="campaign-tag" onclick="window.location.href='/user/{{ e.username }}'">{{ translate('Profile') }}</button>
 
                     {% if e.username == c_user or isadmin %}
                         <button onclick="asktodelete({{ e.eventid }})" class="delete-btn">✕</button>
@@ -324,6 +329,12 @@
 
                             <div style="flex-grow: 1;"></div>
 
+                            <button class="campaign-tag" onclick="openEventModal({{ e.eventid }})" title="{{ translate('View Event Details') }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
                             <button class="campaign-tag" onclick="openeventchat({{ e.eventid }})">{{ translate('Chat') }}</button>
                             <button class="campaign-tag" onclick="window.location.href='/user/{{ e.username }}'">{{ translate('Profile') }}</button>
 
@@ -759,4 +770,71 @@ function generateImage() {
          span.innerText = data.likes;
      });
  });
+
+ // Modal for event details
+ function openEventModal(eventid) {
+     const modal = document.createElement('div');
+     modal.id = 'event-modal-' + eventid;
+     modal.style.cssText = `
+         position: fixed;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         background: rgba(0,0,0,0.8);
+         z-index: 5000;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         padding: 20px;
+     `;
+
+     const iframe = document.createElement('iframe');
+     iframe.src = '/event/' + eventid;
+     iframe.style.cssText = `
+         width: 100%;
+         height: 100%;
+         max-width: 1400px;
+         max-height: 90vh;
+         border: none;
+         border-radius: 12px;
+         background: var(--bg-light);
+     `;
+
+     const closeBtn = document.createElement('button');
+     closeBtn.innerHTML = '✕';
+     closeBtn.style.cssText = `
+         position: absolute;
+         top: 20px;
+         right: 20px;
+         width: 40px;
+         height: 40px;
+         background: var(--primary-color);
+         border: none;
+         border-radius: 50%;
+         color: white;
+         font-size: 24px;
+         cursor: pointer;
+         z-index: 5001;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-weight: bold;
+     `;
+
+     closeBtn.onclick = (e) => {
+         e.stopPropagation();
+         modal.remove();
+     };
+
+     modal.onclick = (e) => {
+         if (e.target === modal) {
+             modal.remove();
+         }
+     };
+
+     modal.appendChild(iframe);
+     modal.appendChild(closeBtn);
+     document.body.appendChild(modal);
+ }
 </script>
