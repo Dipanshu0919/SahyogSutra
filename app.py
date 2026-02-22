@@ -104,13 +104,13 @@ def translate_thread(text, lang, save_file):
 
 async def checkevent():
     while True:
-        await asyncio.sleep(5 + random.randint(0, 10))
+        await asyncio.sleep(30 + random.randint(0, 10))
         try:
             async with httpx.AsyncClient() as client:
                 await client.get(f"http://{app_running_host}:{app_running_port}/checkeventloop")
         except Exception as e:
             print(f"Check event loop error: {e}")
-            await asyncio.sleep(6)
+            await asyncio.sleep(60)
 
 # --- Rate Limiter Helper ---
 def check_rate_limit(ip: str, window: int = 30) -> tuple[bool, int]:
@@ -938,11 +938,11 @@ def checkeventloop():
 
                 if etime <= datetime.datetime.now(ist):
                     print(f"Deleting event {x['eventid']}")
-                    # del_event(c, x["eventid"])
-                    # details = detailsformat(dict(x))
-                    # sendmail(x["email"], "Event Ended",
-                    #          f"Hey there your event was ended, so it has been deleted!\n\nEvent Details:\n\n{details}\n\nThank You!")
-                    # sendlog(f"#EventEnd \nEvent Ended at {etime.strftime('%Y-%m-%d %H:%M:%S')}.\nEvent Details:\n\n{details}")
+                    del_event(c, x["eventid"])
+                    details = detailsformat(dict(x))
+                    sendmail(x["email"], "Event Ended",
+                             f"Hey there your event was ended, so it has been deleted!\n\nEvent Details:\n\n{details}\n\nThank You!")
+                    sendlog(f"#EventEnd \nEvent Ended at {etime.strftime('%Y-%m-%d %H:%M:%S')}.\nEvent Details:\n\n{details}")
                     # Invalidate campaigns cache
                     _campaigns_cache["ts"] = 0
             except Exception as e:

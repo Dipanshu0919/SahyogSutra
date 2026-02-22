@@ -1,12 +1,18 @@
 from . import sendlog, sendmail
 from .detailformat import detailsformat
-# REMOVED: from .delete_event import del_event <--- This was causing the error
 
 def del_event(c, eventid):
     try:
         edetail = c.execute("SELECT * FROM eventdetail WHERE eventid=?", (eventid,)).fetchone()
         if not edetail: return
+
         details = c.execute("SELECT * FROM userdetails WHERE username=?", (edetail["username"],)).fetchone()
+
+        insert_in_ended_query = """INSERT INTO `endedevent` (`eventid`,`eventname`,`email`,`eventstarttime`,`eventendtime`,`eventstartdate`,`eventenddate`,`location`,`category`,`description`,`username`,`likes`)
+                   SELECT `eventid`,`eventname`,`email`,`eventstarttime`,`eventendtime`,`eventstartdate`,`eventenddate`,`location`,`category`,`description`,`username`,`likes` FROM `eventdetail` WHERE `eventid` = (?)"""
+
+        c.execute(insert_in_ended_query, (eventid,))
+
         c.execute("DELETE FROM eventdetail where eventid=?", (eventid,))
         c.execute("DELETE FROM messages where eventid=?", (eventid,))
 
@@ -29,6 +35,7 @@ def del_event(c, eventid):
                     c.execute("UPDATE userdetails SET likes=NULL WHERE username=?", (details["username"], ))
                 else:
                     c.execute("UPDATE userdetails SET likes=? WHERE username=?", (newl, details["username"]))
+
     except Exception as e:
         sendlog(f"Error Deleting Event {eventid}: {e}")
         print(f"Error Deleting Event {eventid}: {e}")
