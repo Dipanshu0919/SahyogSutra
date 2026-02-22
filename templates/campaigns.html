@@ -660,7 +660,7 @@ function openShareModal(name, id, date, time, location, desc) {
 function closeShareModal() { document.getElementById('shareModal').classList.remove('show'); }
 
 function copyEventLink() {
-    const link = `${window.location.origin}/group-chat/from-event/${currentShareEvent.id}`;
+    const link = `${window.location.origin}/event/${currentShareEvent.id}`;
     const text = `Check out this event on EcoCamp: ${currentShareEvent.name}\n${link}`;
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(() => {

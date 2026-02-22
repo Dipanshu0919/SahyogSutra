@@ -384,6 +384,7 @@ async def eventfromeventid(request: Request, eventid: int, db: AsyncDB = Depends
     isadmin = False
     currentuname = session.get("username")
     user_lang = session.get("lang", "en")
+    ud = {}
 
     if currentuname:
         await db.execute("SELECT * FROM userdetails WHERE username=?", (currentuname,))
@@ -400,7 +401,8 @@ async def eventfromeventid(request: Request, eventid: int, db: AsyncDB = Depends
         "c_user": str(currentuname).strip(),
         "eventdetails": getevent,
         "translate": bound_translate,
-        "user_language": user_lang
+        "user_language": user_lang,
+        "userdetails": ud
     })
 
 @app.post("/forgetpassword")
