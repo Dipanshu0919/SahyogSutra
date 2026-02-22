@@ -70,16 +70,16 @@ def save_translations():
         print(f"Error saving translation file: {e}")
         sendlog(f"Error saving translation file: {e}")
 
-def translation_file_thread():
-    while True:
-        time.sleep(60)
-        with translations_lock:
-            save_translations()
-            try:
-                with open("translations_backup.json", "w", encoding="utf-8") as f:
-                    json.dump(all_translations, f, indent=4, ensure_ascii=False)
-            except Exception:
-                pass
+# def translation_file_thread():
+#     while True:
+#         time.sleep(60)
+#         with translations_lock:
+#             save_translations()
+#             try:
+#                 with open("translations_backup.json", "w", encoding="utf-8") as f:
+#                     json.dump(all_translations, f, indent=4, ensure_ascii=False)
+#             except Exception:
+#                 pass
 
 def translate_thread(text, lang, save_file):
     global all_translations
@@ -97,15 +97,6 @@ def translate_thread(text, lang, save_file):
         existing = translate_dict.get(text, {})
         existing[lang] = translated
         translate_dict[text] = existing
-
-def checkevent():
-    while True:
-        time.sleep(30 + random.randint(0, 10))
-        try:
-            pass
-        except Exception as e:
-            print(f"Check event loop error: {e}")
-            time.sleep(60)
 
 # --- Rate Limiter Helper ---
 def check_rate_limit(ip: str, window: int = 30) -> tuple[bool, int]:
@@ -131,10 +122,10 @@ def check_rate_limit(ip: str, window: int = 30) -> tuple[bool, int]:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     load_translations()
-    threading.Thread(target=checkevent, name="CheckEventExist", daemon=True).start()
-    threading.Thread(target=translation_file_thread, name="TranslationFileThread", daemon=True).start()
+
+    # abhi jarurat nhi hai
+    # threading.Thread(target=translation_file_thread, name="TranslationFileThread", daemon=True).start()
     yield
     # Shutdown
     _translation_executor.shutdown(wait=False)
