@@ -23,6 +23,26 @@ def sendmailthread(receiver, subject, message):
         smtp.send_message(msg)
         sendlog(f"Email sent to {receiver}")
 
+# def sendmailthread(receiver, subject, message):
+    # api_token = "mlsn.84bc5ebb7a97a83db3f7f73bb52e9ecc282ed8e9b7f84824539df975f91e9a58"
+    # domain = "test-zxk54v8qwqxljy6v.mlsender.net"
+
+    # from mailersend import MailerSendClient, EmailBuilder
+
+    # ms = MailerSendClient(api_key=api_token)
+
+    # email = (EmailBuilder()
+    #     .from_email(f"dipanshu@{domain}", "dipanshu")
+    #         .to_many([{"email": "dipanshu0919@gmail.com", "name": "Recipient"}])
+    #         .subject("Hello from dipanshu!")
+    #         .html("Hello bro!")
+    #         .text("Hello World!")
+    #         .build())
+
+    # response = ms.emails.send(email)
+    # print(response)
+
+
 
 def sendmail(receiver, subject, message):
     thread = threading.Thread(target=sendmailthread, args=(receiver, subject, message))

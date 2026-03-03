@@ -1,65 +1,448 @@
 <style>
-    .add-event-wrapper { color: var(--text-color, #f1f5f9); width: 100%; max-width: 100%; }
-    .add-event-grid { display: flex; flex-direction: column; gap: 1.5rem; width: 100%; margin: 0; }
-    .add-event-form-container { background: var(--bg-light, #141828); border: 1px solid var(--border-color, #334155); border-radius: 16px; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); width: 100%; }
-    .styled-input-group { margin-bottom: 1.25rem; }
-    .styled-input-group label { font-weight: 600; font-size: 0.9rem; color: var(--text-muted, #94a3b8); display: block; margin-bottom: 0.5rem; }
-    .label-row { display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem; }
-    .label-row label { margin-bottom: 0; display: inline; }
-    .info-icon-wrapper { position: relative; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--primary-color, #d76a1e); margin-top: -2px; }
-    .info-icon-svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
-    .info-icon-wrapper:hover .info-icon-svg { stroke: var(--primary-hover, #f0c84b); }
-    .tooltip-text { visibility: hidden; width: 220px; background-color: #0a0c20; color: #f1f5f9; text-align: center; border: 1px solid var(--border-color, #334155); border-radius: 8px; padding: 10px; position: absolute; z-index: 100; bottom: 140%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.2s, transform 0.2s; font-size: 0.8rem; font-weight: normal; line-height: 1.4; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); pointer-events: none; }
-    .tooltip-text::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: var(--border-color, #334155) transparent transparent transparent; }
-    .info-icon-wrapper:hover .tooltip-text, .info-icon-wrapper:focus .tooltip-text, .info-icon-wrapper:focus-within .tooltip-text { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(5px); }
-    @media (max-width: 450px) { .tooltip-text { width: 180px; left: 0; transform: translateX(-10%); } .tooltip-text::after { left: 15%; } .info-icon-wrapper:hover .tooltip-text, .info-icon-wrapper:focus .tooltip-text { transform: translateX(-10%) translateY(5px); } }
-    .styled-input { width: 100%; padding: 0.75rem 1rem; background-color: var(--bg-dark, #0a0c20); border: 1px solid var(--border-color, #334155); border-radius: 8px; color: var(--text-color, #f1f5f9); font-size: 0.95rem; transition: all 0.2s ease; box-sizing: border-box; }
-    .styled-input:focus { outline: none; border-color: var(--primary-color, #d76a1e); box-shadow: 0 0 0 3px rgba(215, 106, 30, 0.2); }
-    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .date-time-wrapper { display: flex; align-items: stretch; gap: 1.5rem; margin-bottom: 1.25rem; }
-    .date-time-wrapper .styled-input-group { margin-bottom: 0; }
-    .dt-block { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .dt-separator { width: 1px; background-color: var(--border-color, #334155); opacity: 0.6; margin: 5px 0; }
-    @media (max-width: 800px) { .date-time-wrapper { flex-direction: column; gap: 1rem; } .dt-separator { width: 100%; height: 1px; margin: 0; } }
-    @media (max-width: 600px) { .input-row { grid-template-columns: 1fr; gap: 0; } .add-event-form-container { padding: 1.5rem; } }
-    .category-box { background: var(--bg-dark, #0a0c20); border: 1px solid var(--border-color, #334155); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
-    .cat-chips-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1rem; }
-    .cat-chip-btn { background: var(--bg-light, #141828); border: 1px solid var(--border-color, #475569); color: var(--text-muted, #94a3b8); padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-weight: 500; }
-    .cat-chip-btn:hover { border-color: var(--primary-color, #d76a1e); color: var(--text-color, #fff); }
-    .cat-chip-btn.active { background: var(--primary-color, #d76a1e); border-color: var(--primary-color, #d76a1e); color: #fff; }
-    .event-search-box { width: 100%; padding: 10px 12px 10px 35px; background: var(--bg-light, #141828) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E") no-repeat 10px center; border: 1px solid var(--border-color, #475569); border-radius: 8px; color: var(--text-color, #fff); margin-bottom: 1rem; display: block; }
-    .event-search-box:focus { outline: none; border-color: var(--primary-color, #d76a1e); }
-    .event-list-panel { max-height: 200px; overflow-y: auto; border-top: 1px solid var(--border-color, #333); padding-top: 10px; display: none; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-top: 10px; }
-    .event-list-panel.visible { display: grid; }
-    .event-radio-label { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s; font-size: 0.85rem; color: var(--text-muted, #cbd5e1); border: 1px solid transparent; }
-    .event-radio-label:hover { background: rgba(255,255,255,0.05); }
-    .event-radio-label.selected { background: rgba(215, 106, 30, 0.15); border-color: rgba(215, 106, 30, 0.3); color: #f0c84b; font-weight: 600; }
-    .event-cat-tag { font-size: 0.7em; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; margin-left: auto; color: #94a3b8; }
-    .event-list-panel::-webkit-scrollbar { width: 6px; }
-    .event-list-panel::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-    .tips-dropdown { background: rgba(215, 106, 30, 0.08); border: 1px solid rgba(215, 106, 30, 0.3); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; margin-bottom: 0.5rem; }
-    .tips-dropdown summary { padding: 1rem 1.5rem; cursor: pointer; font-weight: 600; color: var(--primary-color, #f0c84b); display: flex; justify-content: space-between; align-items: center; list-style: none; user-select: none; }
-    .tips-dropdown summary::-webkit-details-marker { display: none; }
-    .tips-dropdown summary::after { content: '▼'; font-size: 0.8rem; transition: transform 0.3s; }
-    .tips-dropdown[open] summary::after { transform: rotate(180deg); }
-    .tips-content { padding: 0 1.5rem 1.5rem 1.5rem; color: var(--text-muted, #94a3b8); border-top: 1px solid rgba(215, 106, 30, 0.2); animation: slideDown 0.3s ease-out; }
-    .tips-content ul { margin: 0; padding-left: 1.2rem; }
-    .tips-content li { margin-bottom: 0.5rem; font-size: 0.9rem; }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    .ai-btn-fancy { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
-    .ai-btn-fancy:hover { transform: scale(1.05); }
-    .form-actions { display: flex; gap: 1rem; margin-top: 2rem; }
-    .btn-submit { flex: 2; padding: 12px; background: var(--primary-color, #d76a1e); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-    .btn-submit:hover { background: var(--primary-hover, #2563eb); }
-    .btn-reset { flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border-color, #475569); color: var(--text-muted, #94a3b8); border-radius: 8px; cursor: pointer; }
-    .btn-reset:hover { background: rgba(255,255,255,0.05); color: white; }
-    .ai-hint { color: var(--text-muted, #888); font-size: 0.9rem; margin-right: 10px; margin-bottom: 0; }
+    .add-event-wrapper {
+        color: var(--text-color, #f1f5f9);
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .add-event-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        width: 100%;
+        margin: 0;
+    }
+
+    .add-event-form-container {
+        background: var(--bg-light, #141828);
+        border: 1px solid var(--border-color, #334155);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        width: 100%;
+    }
+
+    .styled-input-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .styled-input-group label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-muted, #94a3b8);
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .label-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .label-row label {
+        margin-bottom: 0;
+        display: inline;
+    }
+
+    .info-icon-wrapper {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--primary-color, #d76a1e);
+        margin-top: -2px;
+    }
+
+    .info-icon-svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: stroke 0.2s;
+    }
+
+    .info-icon-wrapper:hover .info-icon-svg {
+        stroke: var(--primary-hover, #f0c84b);
+    }
+
+    .tooltip-text {
+        visibility: hidden;
+        width: 220px;
+        background-color: #0a0c20;
+        color: #f1f5f9;
+        text-align: center;
+        border: 1px solid var(--border-color, #334155);
+        border-radius: 8px;
+        padding: 10px;
+        position: absolute;
+        z-index: 100;
+        bottom: 140%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.2s, transform 0.2s;
+        font-size: 0.8rem;
+        font-weight: normal;
+        line-height: 1.4;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        pointer-events: none;
+    }
+
+    .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -6px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: var(--border-color, #334155) transparent transparent transparent;
+    }
+
+    .info-icon-wrapper:hover .tooltip-text,
+    .info-icon-wrapper:focus .tooltip-text,
+    .info-icon-wrapper:focus-within .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(-50%) translateY(5px);
+    }
+
+    @media (max-width: 450px) {
+        .tooltip-text {
+            width: 180px;
+            left: 0;
+            transform: translateX(-10%);
+        }
+
+        .tooltip-text::after {
+            left: 15%;
+        }
+
+        .info-icon-wrapper:hover .tooltip-text,
+        .info-icon-wrapper:focus .tooltip-text {
+            transform: translateX(-10%) translateY(5px);
+        }
+    }
+
+    .styled-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background-color: var(--bg-dark, #0a0c20);
+        border: 1px solid var(--border-color, #334155);
+        border-radius: 8px;
+        color: var(--text-color, #f1f5f9);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .styled-input:focus {
+        outline: none;
+        border-color: var(--primary-color, #d76a1e);
+        box-shadow: 0 0 0 3px rgba(215, 106, 30, 0.2);
+    }
+
+    .input-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .date-time-wrapper {
+        display: flex;
+        align-items: stretch;
+        gap: 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .date-time-wrapper .styled-input-group {
+        margin-bottom: 0;
+    }
+
+    .dt-block {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .dt-separator {
+        width: 1px;
+        background-color: var(--border-color, #334155);
+        opacity: 0.6;
+        margin: 5px 0;
+    }
+
+    @media (max-width: 800px) {
+        .date-time-wrapper {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .dt-separator {
+            width: 100%;
+            height: 1px;
+            margin: 0;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .input-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .add-event-form-container {
+            padding: 1.5rem;
+        }
+    }
+
+    .category-box {
+        background: var(--bg-dark, #0a0c20);
+        border: 1px solid var(--border-color, #334155);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .cat-chips-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .cat-chip-btn {
+        background: var(--bg-light, #141828);
+        border: 1px solid var(--border-color, #475569);
+        color: var(--text-muted, #94a3b8);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .cat-chip-btn:hover {
+        border-color: var(--primary-color, #d76a1e);
+        color: var(--text-color, #fff);
+    }
+
+    .cat-chip-btn.active {
+        background: var(--primary-color, #d76a1e);
+        border-color: var(--primary-color, #d76a1e);
+        color: #fff;
+    }
+
+    .event-search-box {
+        width: 100%;
+        padding: 10px 12px 10px 35px;
+        background: var(--bg-light, #141828) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E") no-repeat 10px center;
+        border: 1px solid var(--border-color, #475569);
+        border-radius: 8px;
+        color: var(--text-color, #fff);
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .event-search-box:focus {
+        outline: none;
+        border-color: var(--primary-color, #d76a1e);
+    }
+
+    .event-list-panel {
+        max-height: 200px;
+        overflow-y: auto;
+        border-top: 1px solid var(--border-color, #333);
+        padding-top: 10px;
+        display: none;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .event-list-panel.visible {
+        display: grid;
+    }
+
+    .event-radio-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-size: 0.85rem;
+        color: var(--text-muted, #cbd5e1);
+        border: 1px solid transparent;
+    }
+
+    .event-radio-label:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .event-radio-label.selected {
+        background: rgba(215, 106, 30, 0.15);
+        border-color: rgba(215, 106, 30, 0.3);
+        color: #f0c84b;
+        font-weight: 600;
+    }
+
+    .event-cat-tag {
+        font-size: 0.7em;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: auto;
+        color: #94a3b8;
+    }
+
+    .event-list-panel::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .event-list-panel::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 3px;
+    }
+
+    .tips-dropdown {
+        background: rgba(215, 106, 30, 0.08);
+        border: 1px solid rgba(215, 106, 30, 0.3);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 0.5rem;
+    }
+
+    .tips-dropdown summary {
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--primary-color, #f0c84b);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        list-style: none;
+        user-select: none;
+    }
+
+    .tips-dropdown summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .tips-dropdown summary::after {
+        content: '▼';
+        font-size: 0.8rem;
+        transition: transform 0.3s;
+    }
+
+    .tips-dropdown[open] summary::after {
+        transform: rotate(180deg);
+    }
+
+    .tips-content {
+        padding: 0 1.5rem 1.5rem 1.5rem;
+        color: var(--text-muted, #94a3b8);
+        border-top: 1px solid rgba(215, 106, 30, 0.2);
+        animation: slideDown 0.3s ease-out;
+    }
+
+    .tips-content ul {
+        margin: 0;
+        padding-left: 1.2rem;
+    }
+
+    .tips-content li {
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .ai-btn-fancy {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .ai-btn-fancy:hover {
+        transform: scale(1.05);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .btn-submit {
+        flex: 2;
+        padding: 12px;
+        background: var(--primary-color, #d76a1e);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-submit:hover {
+        background: var(--primary-hover, #2563eb);
+    }
+
+    .btn-reset {
+        flex: 1;
+        padding: 12px;
+        background: transparent;
+        border: 1px solid var(--border-color, #475569);
+        color: var(--text-muted, #94a3b8);
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .btn-reset:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+    }
+
+    .ai-hint {
+        color: var(--text-muted, #888);
+        font-size: 0.9rem;
+        margin-right: 10px;
+        margin-bottom: 0;
+    }
 </style>
 
 <div class="add-event-wrapper">
     <div style="text-align: center; margin-bottom: 2rem;">
         <h1 style="margin-bottom: 0.5rem;">{{ translate("Create a New Campaign") }}</h1>
-        <p style="color: var(--text-muted, #94a3b8);">{{ translate("Add details for your campaign below. Once approved, it will appear in the campaign list for everyone to see.") }}</p>
+        <p style="color: var(--text-muted, #94a3b8);">{{ translate("Add details for your campaign below. Once approved,
+            it will appear in the campaign list for everyone to see.") }}</p>
     </div>
 
     <div class="add-event-grid">
@@ -88,21 +471,33 @@
                         <div class="label-row">
                             <label>{{ translate("Campaign Name") }}</label>
                             <div class="info-icon-wrapper" tabindex="0">
-                                <svg class="info-icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                                <span class="tooltip-text">{{ translate('Enter a descriptive name for your campaign (e.g., Summer Charity Gala 2024)') }}</span>
+                                <svg class="info-icon-svg" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                <span class="tooltip-text">{{ translate('Enter a descriptive name for your campaign
+                                    (e.g., Summer Charity Gala 2024)') }}</span>
                             </div>
                         </div>
-                        <input type="text" class="styled-input" name="eventname" value="{{ fvalues['eventname'] }}" placeholder="{{ translate('e.g., Summer Charity Gala 2024') }}" required />
+                        <input type="text" class="styled-input" name="eventname" value="{{ fvalues['eventname'] }}"
+                            placeholder="{{ translate('e.g., Summer Charity Gala 2024') }}" required />
                     </div>
                     <div class="styled-input-group">
                         <div class="label-row">
                             <label>{{ translate("Location") }}</label>
                             <div class="info-icon-wrapper" tabindex="0">
-                                <svg class="info-icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                                <span class="tooltip-text">{{ translate('Enter the venue or online link (e.g., Central Park, NY or Zoom Meeting ID)') }}</span>
+                                <svg class="info-icon-svg" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                <span class="tooltip-text">{{ translate('Enter the venue or online link (e.g., Central
+                                    Park, NY or Zoom Meeting ID)') }}</span>
                             </div>
                         </div>
-                        <input type="text" class="styled-input" name="location" value="{{ fvalues['location'] }}" placeholder="{{ translate('e.g., Central Park, NY or Zoom Meeting ID') }}" required />
+                        <input type="text" class="styled-input" name="location" value="{{ fvalues['location'] }}"
+                            placeholder="{{ translate('e.g., Central Park, NY or Zoom Meeting ID') }}" required />
                     </div>
                 </div>
 
@@ -111,10 +506,12 @@
                     <label style="display:block; margin-bottom:10px; font-weight:600; color:var(--text-color);">
                         {{ translate("Category & Event Type") }}
                     </label>
-                    <input type="hidden" id="categoryHiddenInput" name="category" value="{{ fvalues['category'] }}" required>
+                    <input type="hidden" id="categoryHiddenInput" name="category" value="{{ fvalues['category'] }}"
+                        required>
 
                     <!-- Search Input -->
-                    <input type="text" id="eventSearchInput" class="event-search-box" placeholder="{{ translate('Type here to find an event category (e.g., Yoga, Meeting, Workshop)...') }}">
+                    <input type="text" id="eventSearchInput" class="event-search-box"
+                        placeholder="{{ translate('Type here to find an event category (e.g., Yoga, Meeting, Workshop)...') }}">
 
                     <!-- Chips -->
                     <div class="cat-chips-container" id="catChips">
@@ -132,8 +529,10 @@
                     <!-- List Panel -->
                     <div class="event-list-panel" id="eventOptionsPanel"></div>
 
-                    <div id="selectedDisplay" style="margin-top:10px; color:#22c55e; font-size:0.9rem; font-weight:600; min-height:1.2em;">
-                        {% if fvalues['category'] %}✓ {{ translate("Selected") }}: {{ translate(fvalues['category'], save_file=False) }}{% endif %}
+                    <div id="selectedDisplay"
+                        style="margin-top:10px; color:#22c55e; font-size:0.9rem; font-weight:600; min-height:1.2em;">
+                        {% if fvalues['category'] %}✓ {{ translate("Selected") }}: {{ translate(fvalues['category'],
+                        save_file=False) }}{% endif %}
                     </div>
                 </div>
 
@@ -143,11 +542,13 @@
                     <div class="dt-block">
                         <div class="styled-input-group">
                             <label>{{ translate("Start Date") }}</label>
-                            <input type="date" class="styled-input" name="eventstartdate" value="{{fvalues['eventstartdate']}}" required />
+                            <input type="date" class="styled-input" name="eventstartdate"
+                                value="{{fvalues['eventstartdate']}}" required />
                         </div>
                         <div class="styled-input-group">
                             <label>{{ translate("End Date") }}</label>
-                            <input type="date" class="styled-input" name="eventenddate" value="{{fvalues['eventenddate']}}" required />
+                            <input type="date" class="styled-input" name="eventenddate"
+                                value="{{fvalues['eventenddate']}}" required />
                         </div>
                     </div>
 
@@ -158,43 +559,55 @@
                     <div class="dt-block">
                         <div class="styled-input-group">
                             <label>{{ translate("Start Time") }}</label>
-                            <input type="time" class="styled-input" name="eventstarttime" value="{{fvalues['eventstarttime']}}" required />
+                            <input type="time" class="styled-input" name="eventstarttime"
+                                value="{{fvalues['eventstarttime']}}" required />
                         </div>
                         <div class="styled-input-group">
                             <label>{{ translate("End Time") }}</label>
-                            <input type="time" class="styled-input" name="eventendtime" value="{{fvalues['eventendtime']}}" required />
+                            <input type="time" class="styled-input" name="eventendtime"
+                                value="{{fvalues['eventendtime']}}" required />
                         </div>
                     </div>
                 </div>
 
                 <!-- Description & AI -->
                 <div class="styled-input-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                         <!-- Added label with info icon here -->
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <!-- Added label with info icon here -->
                         <div class="label-row" style="margin-bottom:0;">
                             <label>{{ translate("Description") }}</label>
                             <div class="info-icon-wrapper" tabindex="0">
-                                <svg class="info-icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                                <span class="tooltip-text">{{ translate('Describe details, agenda, and what to bring. (e.g., Join us for a community gathering with live music...)') }}</span>
+                                <svg class="info-icon-svg" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                <span class="tooltip-text">{{ translate('Describe details, agenda, and what to bring.
+                                    (e.g., Join us for a community gathering with live music...)') }}</span>
                             </div>
                         </div>
 
                         <div style="display: flex; align-items: center;">
-                             <p class="ai-hint" style="display: none; sm:display: block;">{{ translate("Need help?") }}ㅤ</p>
-                             <button type="button" class="ai-btn-fancy" id="aiBtn" onclick="generateDescription()">
+                            <p class="ai-hint" style="display: none; sm:display: block;">{{ translate("Need help?") }}ㅤ
+                            </p>
+                            <button type="button" class="ai-btn-fancy" id="aiBtn" onclick="generateDescription()">
                                 ✨ {{ translate("AI Generate") }}
                             </button>
                         </div>
                     </div>
 
                     <!-- AI Options Container -->
-                    <h4 id="aiInstruction" style="text-align:center; margin: 10px 0; display:none; color:var(--text-muted); font-size: 0.9rem;">
+                    <h4 id="aiInstruction"
+                        style="text-align:center; margin: 10px 0; display:none; color:var(--text-muted); font-size: 0.9rem;">
                         {{ translate("Click any option below to auto-fill the description") }}
                     </h4>
 
                     <div id="aiResults" class="ai-options-container" style="margin-bottom:10px;"></div>
 
-                    <textarea class="styled-input" id="descriptionField" name="description" rows="3" placeholder="{{ translate('e.g., Join us for a community gathering to support local artists with live music...') }}" required>{{ fvalues['description'] }}</textarea>
+                    <textarea class="styled-input" id="descriptionField" name="description" rows="3"
+                        placeholder="{{ translate('e.g., Join us for a community gathering to support local artists with live music...') }}"
+                        required>{{ fvalues['description'] }}</textarea>
                 </div>
 
                 <div class="form-actions">
@@ -207,13 +620,13 @@
 </div>
 
 <script>
-(function() {
-    // 1. Prepare Data Structure
-    // categoriesData maps Category -> [EventList]
-    const categoriesData = {
+    (function () {
+        // 1. Prepare Data Structure
+        // categoriesData maps Category -> [EventList]
+        const categoriesData = {
         {% for category, events in categories.items() %}
-        "{{ category | safe }}": [{% for event_name in events %}"{{ event_name | safe }}"{% if not loop.last %},{% endif %}{% endfor %}]{% if not loop.last %},{% endif %}
-        {% endfor %}
+        "{{ category | safe }}": [{% for event_name in events %}"{{ event_name | safe }}"{% if not loop.last %}, {% endif %} {% endfor %}]{% if not loop.last %}, {% endif %}
+    {% endfor %}
     };
 
     // Create a reverse map for easier searching: EventName -> CategoryName
@@ -229,21 +642,21 @@
     }
 
     // 2. DOM Elements
-    const chipsContainer  = document.getElementById('catChips');
-    const panel           = document.getElementById('eventOptionsPanel');
-    const hiddenInput     = document.getElementById('categoryHiddenInput');
+    const chipsContainer = document.getElementById('catChips');
+    const panel = document.getElementById('eventOptionsPanel');
+    const hiddenInput = document.getElementById('categoryHiddenInput');
     const selectedDisplay = document.getElementById('selectedDisplay');
-    const searchInput     = document.getElementById('eventSearchInput');
-    const catHint         = document.getElementById('catHint');
+    const searchInput = document.getElementById('eventSearchInput');
+    const catHint = document.getElementById('catHint');
 
     let activeCategory = null;
-    let selectedEvent  = hiddenInput.value || null;
+    let selectedEvent = hiddenInput.value || null;
 
     // 3. Render Function (Handles both Search Results and Category Views)
     function renderList(eventsToRender, isSearchMode = false) {
         panel.innerHTML = '';
 
-        if(eventsToRender.length === 0) {
+        if (eventsToRender.length === 0) {
             panel.innerHTML = '<div style="padding:10px; color:#94a3b8; font-size:0.8rem; text-align:center;">No matching events found.</div>';
             panel.classList.add('visible');
             return;
@@ -251,11 +664,11 @@
 
         eventsToRender.forEach(item => {
             const evName = typeof item === 'string' ? item : item.name;
-            const evCat  = typeof item === 'string' ? activeCategory : item.category; // If string, implied from activeCategory
+            const evCat = typeof item === 'string' ? activeCategory : item.category; // If string, implied from activeCategory
 
             const el = document.createElement('div');
             el.className = 'event-radio-label';
-            if(selectedEvent === evName) el.classList.add('selected');
+            if (selectedEvent === evName) el.classList.add('selected');
 
             // HTML for the list item
             let innerHTML = `
@@ -266,7 +679,7 @@
             `;
 
             // If searching, show which category it belongs to
-            if(isSearchMode) {
+            if (isSearchMode) {
                 innerHTML += `<span class="event-cat-tag">${evCat}</span>`;
             }
 
@@ -296,9 +709,9 @@
             item.classList.remove('selected');
             item.querySelector('div > div').style.opacity = '0';
             // Check text content matches (rough check, or we could store data attributes)
-            if(item.textContent.includes(evName)) { // Simple check
-                 item.classList.add('selected');
-                 item.querySelector('div > div').style.opacity = '1';
+            if (item.textContent.includes(evName)) { // Simple check
+                item.classList.add('selected');
+                item.querySelector('div > div').style.opacity = '1';
             }
         });
 
@@ -310,7 +723,7 @@
     function updateChipsVisuals() {
         const chips = chipsContainer.querySelectorAll('.cat-chip-btn');
         chips.forEach(btn => {
-            if(btn.dataset.category === activeCategory) {
+            if (btn.dataset.category === activeCategory) {
                 btn.classList.add('active');
             } else {
                 btn.classList.remove('active');
@@ -344,7 +757,7 @@
     // 6. Chip Click Listener
     chipsContainer.addEventListener('click', e => {
         const btn = e.target.closest('.cat-chip-btn');
-        if(!btn) return;
+        if (!btn) return;
 
         const cat = btn.dataset.category;
 
@@ -366,10 +779,10 @@
     });
 
     // 7. Initial Load State
-    if(selectedEvent) {
+    if (selectedEvent) {
         // Find which category this event belongs to
         const cat = eventToCategoryMap[selectedEvent];
-        if(cat) {
+        if (cat) {
             activeCategory = cat;
             updateChipsVisuals();
             // We can optionally show the list, or keep it hidden until interaction
@@ -378,5 +791,5 @@
         }
     }
 
-})();
+}) ();
 </script>
