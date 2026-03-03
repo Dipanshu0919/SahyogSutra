@@ -1,337 +1,109 @@
 <style>
-    .global-search-container {
-        margin-bottom: 1rem;
+    .global-search-container { margin-bottom: 1rem; }
+    .global-search-input { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-color, #ccc); font-size: 1rem; transition: border-color 0.3s ease; background-color: #fff; color: #1f2937; }
+    .global-search-input:focus { border-color: var(--primary-color, #007bff); outline: none; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1); }
+    .filter-container { margin: 1rem 0 2rem 0; padding: 0 5px; }
+    .filter-header-mobile { display: none; width: 100%; padding: 12px 15px; background-color: #ffffff; color: #1f2937; border: 1px solid var(--border-color, #ccc); border-radius: 8px; font-weight: 600; cursor: pointer; justify-content: space-between; align-items: center; margin-bottom: 10px; user-select: none; transition: background-color 0.2s; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); }
+    .filter-header-mobile:active { background-color: #f5f5f5; }
+    .filter-header-mobile::after { content: '▼'; font-size: 0.8em; margin-left: 10px; color: #6b7280; }
+    .filter-header-mobile.open::after { content: '▲'; }
+    .filter-buttons-wrapper { display: flex; flex-wrap: wrap; gap: 8px; }
+    .filter-btn { padding: 8px 16px; background-color: #f3f4f6; color: #1f2937; border: 1px solid #d1d5db; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; white-space: nowrap; user-select: none; }
+    .filter-btn:hover { background-color: #e5e7eb; border-color: #9ca3af; }
+    .filter-btn.active { background-color: var(--primary-color, #007bff); color: #ffffff; border-color: var(--primary-color, #007bff); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); }
+    .filter-btn.clear-btn { font-weight: 600; }
+    .sort-wrapper { display: flex; align-items: center; gap: 8px; }
+    .sort-direction-btn { background: transparent; color: white; border: none; cursor: pointer; padding: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; height: 40px; width: 40px; min-width: 40px; border-radius: 6px; }
+    .sort-direction-btn svg { transition: transform 0.3s ease; display: block; width: 22px; height: 22px; }
+    .sort-direction-btn.descending svg { transform: rotate(180deg); }
+    .like-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+    .like-btn svg { fill: none; stroke: #9ca3af; stroke-width: 2; transition: all 0.2s ease; width: 22px; height: 22px; }
+    .like-btn:hover svg { stroke: #ef4444; transform: scale(1.15); }
+    .like-btn.liked svg { fill: #ef4444; stroke: #ef4444; }
+    .share-btn { background: transparent; border: none; padding: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; border-radius: 6px; color: #9ca3af; }
+    .share-btn:hover { background-color: rgba(255, 255, 255, 0.1); transform: scale(1.15); color: #6b7280; }
+    .share-btn svg { display: block; width: 20px; height: 20px; }
+    .share-btn.translate-active { color: var(--primary-color, #007bff); background-color: rgba(0, 123, 255, 0.12); }
+    .share-btn.translate-loading { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
+    .spinner-svg { animation: spinner-rotate 0.85s linear infinite; transform-origin: center; }
+    @keyframes spinner-rotate { 100% { transform: rotate(360deg); } }
+    @media (max-width: 768px) { .filter-header-mobile { display: flex; } .filter-buttons-wrapper { display: none; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; margin-top: 5px; } .filter-buttons-wrapper.show { display: flex; animation: fadeIn 0.3s ease; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    .share-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 2500; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    .share-modal.show { display: flex; }
+    .share-content { background: var(--bg-light); padding: 2rem; border-radius: var(--radius); border: 1px solid var(--border-color); max-width: 400px; width: 90%; position: relative; }
+    .share-header { margin-bottom: 1.5rem; text-align: center; }
+    .share-options { display: grid; gap: 1rem; }
+    .share-btn-opt { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+    .share-btn-opt:hover { border-color: var(--primary-color); background: rgba(215, 106, 30, 0.1); }
+    .share-btn-opt svg { width: 20px; height: 20px; }
+    .wa-btn { color: #22c55e; }
+    .img-btn { color: #f59e0b; }
+    h3 { text-align: center; }
+    .close-share { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
+    #capture-area { position: fixed; left: -9999px; width: 600px; background: var(--bg-dark); padding: 40px; border-radius: 12px; color: var(--text-color); border: 2px solid var(--primary-color); }
+
+    /* --- Tour Logic CSS --- */
+    .how-to-btn {
+        background: transparent; border: 1px solid var(--primary-color, #d76a1e);
+        color: var(--primary-color, #d76a1e); padding: 8px 16px; border-radius: 20px;
+        cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+        transition: all 0.2s; margin-bottom: 1rem; font-size: 0.9rem;
+    }
+    .how-to-btn:hover { background: var(--primary-color, #d76a1e); color: #fff; }
+
+    .tour-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+        z-index: 9000; display: none; opacity: 0; transition: opacity 0.3s;
+    }
+    .tour-overlay.active { display: block; opacity: 1; }
+
+    .tour-highlight {
+        position: relative; z-index: 9001 !important;
+        background: var(--bg-light, #141828) !important;
+        box-shadow: 0 0 0 4px var(--primary-color, #d76a1e), 0 0 25px rgba(0,0,0,0.7) !important;
+        border-radius: 12px; transition: all 0.3s; pointer-events: none;
     }
 
-    .global-search-input {
-        width: 100%;
-        padding: 12px 15px;
-        border-radius: 8px;
-        border: 1px solid var(--border-color, #ccc);
-        font-size: 1rem;
-        transition: border-color 0.3s ease;
-        background-color: #fff;
-        color: #1f2937;
+    .tour-tooltip {
+        position: absolute; z-index: 9002; background: var(--primary-color, #d76a1e);
+        color: #fff; padding: 15px; border-radius: 8px; width: 280px; max-width: 90vw;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.6); opacity: 0;
+        transition: opacity 0.3s, transform 0.3s; transform: translateY(10px);
     }
-
-    .global-search-input:focus {
-        border-color: var(--primary-color, #007bff);
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    .tour-tooltip.active { opacity: 1; transform: translateY(0); }
+    .tour-tooltip::after {
+        content: ''; position: absolute; border: 10px solid transparent;
     }
+    .tour-tooltip.pos-bottom::after { top: -20px; left: 20px; border-bottom-color: var(--primary-color, #d76a1e); }
+    .tour-tooltip.pos-top::after { bottom: -20px; left: 20px; border-top-color: var(--primary-color, #d76a1e); }
 
-    .filter-container {
-        margin: 1rem 0 2rem 0;
-        padding: 0 5px;
-    }
-
-    .filter-header-mobile {
-        display: none;
-        width: 100%;
-        padding: 12px 15px;
-        background-color: #ffffff;
-        color: #1f2937;
-        border: 1px solid var(--border-color, #ccc);
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-        user-select: none;
-        transition: background-color 0.2s;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .filter-header-mobile:active {
-        background-color: #f5f5f5;
-    }
-
-    .filter-header-mobile::after {
-        content: '▼';
-        font-size: 0.8em;
-        margin-left: 10px;
-        color: #6b7280;
-    }
-
-    .filter-header-mobile.open::after {
-        content: '▲';
-    }
-
-    .filter-buttons-wrapper {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .filter-btn {
-        padding: 8px 16px;
-        background-color: #f3f4f6;
-        color: #1f2937;
-        border: 1px solid #d1d5db;
-        border-radius: 20px;
-        cursor: pointer;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-        user-select: none;
-    }
-
-    .filter-btn:hover {
-        background-color: #e5e7eb;
-        border-color: #9ca3af;
-    }
-
-    .filter-btn.active {
-        background-color: var(--primary-color, #007bff);
-        color: #ffffff;
-        border-color: var(--primary-color, #007bff);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .filter-btn.clear-btn {
-        font-weight: 600;
-    }
-
-    .sort-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .sort-direction-btn {
-        background: transparent;
-        color: white;
-        border: none;
-        cursor: pointer;
-        padding: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        height: 40px;
-        width: 40px;
-        min-width: 40px;
-        border-radius: 6px;
-    }
-
-    .sort-direction-btn svg {
-        transition: transform 0.3s ease;
-        display: block;
-        width: 22px;
-        height: 22px;
-    }
-
-    .sort-direction-btn.descending svg {
-        transform: rotate(180deg);
-    }
-
-    /* Better icon styling */
-    .like-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-    }
-
-    .like-btn svg {
-        fill: none;
-        stroke: #9ca3af;
-        stroke-width: 2;
-        transition: all 0.2s ease;
-        width: 22px;
-        height: 22px;
-    }
-
-    .like-btn:hover svg {
-        stroke: #ef4444;
-        transform: scale(1.15);
-    }
-
-    .like-btn.liked svg {
-        fill: #ef4444;
-        stroke: #ef4444;
-    }
-
-    .share-btn {
-        background: transparent;
-        border: none;
-        padding: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-        border-radius: 6px;
-        color: #9ca3af;
-    }
-
-    .share-btn:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        transform: scale(1.15);
-        color: #6b7280;
-    }
-
-    .share-btn svg {
-        display: block;
-        width: 20px;
-        height: 20px;
-    }
-
-    .share-btn.translate-active {
-        color: var(--primary-color, #007bff);
-        background-color: rgba(0, 123, 255, 0.12);
-    }
-
-    .share-btn.translate-loading {
-        opacity: 0.55;
-        cursor: not-allowed;
-        pointer-events: none;
-    }
-
-    .spinner-svg {
-        animation: spinner-rotate 0.85s linear infinite;
-        transform-origin: center;
-    }
-
-    @keyframes spinner-rotate {
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-
-    @media (max-width: 768px) {
-        .filter-header-mobile {
-            display: flex;
-        }
-
-        .filter-buttons-wrapper {
-            display: none;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            margin-top: 5px;
-        }
-
-        .filter-buttons-wrapper.show {
-            display: flex;
-            animation: fadeIn 0.3s ease;
-        }
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-5px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Shared Modal CSS Moved Here */
-    .share-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 2500;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(5px);
-    }
-
-    .share-modal.show {
-        display: flex;
-    }
-
-    .share-content {
-        background: var(--bg-light);
-        padding: 2rem;
-        border-radius: var(--radius);
-        border: 1px solid var(--border-color);
-        max-width: 400px;
-        width: 90%;
-        position: relative;
-    }
-
-    .share-header {
-        margin-bottom: 1.5rem;
-        text-align: center;
-    }
-
-    .share-options {
-        display: grid;
-        gap: 1rem;
-    }
-
-    .share-btn-opt {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        width: 100%;
-        padding: 12px;
-        background: var(--bg-dark);
-        border: 1px solid var(--border-color);
-        color: var(--text-color);
-        border-radius: 8px;
-        cursor: pointer;
-        transition: 0.2s;
-        font-size: 1rem;
-    }
-
-    .share-btn-opt:hover {
-        border-color: var(--primary-color);
-        background: rgba(215, 106, 30, 0.1);
-    }
-
-    .share-btn-opt svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    .wa-btn {
-        color: #22c55e;
-    }
-
-    .img-btn {
-        color: #f59e0b;
-    }
-
-    h3 {
-        text-align: center;
-    }
-
-    .close-share {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: none;
-        border: none;
-        color: var(--text-muted);
-        font-size: 1.5rem;
-        cursor: pointer;
-    }
-
-    #capture-area {
-        position: fixed;
-        left: -9999px;
-        width: 600px;
-        background: var(--bg-dark);
-        padding: 40px;
-        border-radius: 12px;
-        color: var(--text-color);
-        border: 2px solid var(--primary-color);
-    }
+    .tour-header { font-weight: bold; margin-bottom: 8px; font-size: 1.1rem; padding-right: 20px; }
+    .tour-text { font-size: 0.9rem; margin-bottom: 15px; line-height: 1.5; opacity: 0.95; }
+    .tour-nav { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
+    .tour-btn { background: rgba(0,0,0,0.25); border: none; color: #fff; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
+    .tour-btn:hover { background: rgba(0,0,0,0.4); }
+    .tour-close-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; opacity: 0.7; transition: opacity 0.2s; }
+    .tour-close-btn:hover { opacity: 1; }
 </style>
+
+<!-- Tour Overlay and Tooltip Elements -->
+<div class="tour-overlay" id="campaignsTourOverlay"></div>
+<div class="tour-tooltip" id="campaignsTourTooltip" style="display: none;">
+    <button class="tour-close-btn" onclick="endCampaignsTour()">✕</button>
+    <div class="tour-header" id="campaignsTourHeader">Step 1</div>
+    <div class="tour-text" id="campaignsTourText">Text</div>
+    <div class="tour-nav">
+        <button class="tour-btn" id="campaignsTourPrev" onclick="prevCampaignsTourStep()">{{ translate("Prev") }}</button>
+        <span id="campaignsTourCount" style="font-size: 0.85rem; font-weight: 600; opacity: 0.9;">1/4</span>
+        <button class="tour-btn" id="campaignsTourNext" onclick="nextCampaignsTourStep()">{{ translate("Next") }}</button>
+    </div>
+</div>
+
+<div style="text-align: center; margin-bottom: 1.5rem;">
+    <button class="how-to-btn" onclick="startCampaignsTour()">💡 {{ translate("How to Use Campaigns") }}</button>
+</div>
 
 {% if viewyourevents %}
 <button class="cta" onclick="location.reload();" style="width:100%">{{ translate("View All Events") }}</button><br><br>
@@ -339,13 +111,13 @@
 <button id="backToAllBtn" class="cta" style="display: none;">{{ translate("Back to All Categories") }}</button>
 
 {% if not viewyourevents %}
-<div class="search-wrapper">
+<div class="search-wrapper" id="step-campaigns-search">
     <input type="text" class="global-search-input"
         placeholder="{{ translate('Search all events (title, location, description)...') }}"
         onkeyup="handleGlobalSearch(this.value)">
 </div>
 
-<div class="filter-container">
+<div class="filter-container" id="step-campaigns-filters">
     <div class="filter-header-mobile" onclick="toggleMobileFilterMenu()" id="mobileFilterHeader">
         <span id="mobileFilterText">{{ translate("Filter Categories") }}</span>
     </div>
@@ -518,7 +290,7 @@
 {% endif %}
 
 {% if viewevents %}
-<div class="campaign-category-wrapper category-section" id="cat-{{ category_name|replace(' ', '-')|lower }}"
+<div class="campaign-category-wrapper category-section step-campaigns-cat" id="cat-{{ category_name|replace(' ', '-')|lower }}"
     data-category-id="{{ category_name|replace(' ', '-')|lower }}">
     <h3>{{ translate(category_name) }} ( {{ viewevents|length }} )</h3>
 
@@ -1216,5 +988,133 @@
         modal.appendChild(iframeWrapper);
         modal.appendChild(closeBtn);
         document.body.appendChild(modal);
+    }
+
+    // --- Campaigns Tour Logic ---
+    let currentCampaignsTourStep = 0;
+    let campaignsTourSteps = [];
+
+    function buildCampaignsTourSteps() {
+        campaignsTourSteps = [];
+
+        if (document.getElementById('step-campaigns-search')) {
+            campaignsTourSteps.push({
+                targetId: 'step-campaigns-search',
+                title: '{{ translate("1. Global Search") }}',
+                text: '{{ translate("Use this bar to find any campaign across all categories by typing keywords.") }}',
+                pos: 'bottom'
+            });
+        }
+
+        if (document.getElementById('step-campaigns-filters')) {
+            campaignsTourSteps.push({
+                targetId: 'step-campaigns-filters',
+                title: '{{ translate("2. Category Filters") }}',
+                text: '{{ translate("Click these buttons to quickly filter and view specific types of campaigns.") }}',
+                pos: 'bottom'
+            });
+        }
+
+        if (document.getElementById('trending-section-wrapper')) {
+            campaignsTourSteps.push({
+                targetId: 'trending-section-wrapper',
+                title: '{{ translate("3. Trending Campaigns") }}',
+                text: '{{ translate("Discover the most popular and highly-rated campaigns happening right now.") }}',
+                pos: 'top'
+            });
+        }
+
+        const firstCat = document.querySelector('.step-campaigns-cat');
+        if (firstCat) {
+            campaignsTourSteps.push({
+                targetId: firstCat.id,
+                title: '{{ translate("4. Browse & Sort") }}',
+                text: '{{ translate("Browse categorized campaigns here. You can also search within a specific category or sort the cards by date, likes, and more.") }}',
+                pos: 'top'
+            });
+        }
+    }
+
+    function startCampaignsTour() {
+        buildCampaignsTourSteps();
+        if (campaignsTourSteps.length === 0) return;
+
+        currentCampaignsTourStep = 0;
+        document.getElementById('campaignsTourOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        showCampaignsTourStep(currentCampaignsTourStep);
+    }
+
+    function endCampaignsTour() {
+        document.getElementById('campaignsTourOverlay').classList.remove('active');
+        document.getElementById('campaignsTourTooltip').classList.remove('active');
+        document.getElementById('campaignsTourTooltip').style.display = 'none';
+        document.body.style.overflow = '';
+        document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+    }
+
+    function showCampaignsTourStep(index) {
+        document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+
+        const step = campaignsTourSteps[index];
+        const target = document.getElementById(step.targetId);
+
+        if(!target) return endCampaignsTour();
+
+        target.classList.add('tour-highlight');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        const tooltip = document.getElementById('campaignsTourTooltip');
+        document.getElementById('campaignsTourHeader').innerText = step.title;
+        document.getElementById('campaignsTourText').innerText = step.text;
+        document.getElementById('campaignsTourCount').innerText = `${index + 1}/${campaignsTourSteps.length}`;
+
+        document.getElementById('campaignsTourPrev').style.visibility = index === 0 ? 'hidden' : 'visible';
+        document.getElementById('campaignsTourNext').innerText = index === campaignsTourSteps.length - 1 ? '{{ translate("Finish") }}' : '{{ translate("Next") }}';
+
+        setTimeout(() => {
+            tooltip.style.display = 'block';
+            tooltip.style.visibility = 'hidden';
+            tooltip.classList.remove('pos-top', 'pos-bottom');
+            tooltip.classList.add('pos-' + step.pos);
+
+            const rect = target.getBoundingClientRect();
+
+            let topPos = rect.bottom + window.scrollY + 15;
+            if (step.pos === 'top') {
+                topPos = rect.top + window.scrollY - tooltip.offsetHeight - 15;
+            }
+
+            let leftPos = rect.left + window.scrollX + (rect.width / 2) - (tooltip.offsetWidth / 2);
+
+            if (leftPos + tooltip.offsetWidth > window.innerWidth - 10) {
+                leftPos = window.innerWidth - tooltip.offsetWidth - 10;
+            }
+            if (leftPos < 10) {
+                leftPos = 10;
+            }
+
+            tooltip.style.top = topPos + 'px';
+            tooltip.style.left = leftPos + 'px';
+
+            tooltip.style.visibility = 'visible';
+            tooltip.classList.add('active');
+        }, 300);
+    }
+
+    function nextCampaignsTourStep() {
+        if(currentCampaignsTourStep < campaignsTourSteps.length - 1) {
+            currentCampaignsTourStep++;
+            showCampaignsTourStep(currentCampaignsTourStep);
+        } else {
+            endCampaignsTour();
+        }
+    }
+
+    function prevCampaignsTourStep() {
+        if(currentCampaignsTourStep > 0) {
+            currentCampaignsTourStep--;
+            showCampaignsTourStep(currentCampaignsTourStep);
+        }
     }
 </script>

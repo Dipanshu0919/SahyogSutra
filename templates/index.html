@@ -5,7 +5,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Sahyog Sutra — Weaving Communities Together</title>
-
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -13,11 +12,70 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" type="image/png" href="/static/sahyog_sutra_logo.png">
+
+    <style>
+        /* --- Tour Logic CSS --- */
+        .how-to-btn {
+            background: transparent; border: 1px solid var(--primary-color, #d76a1e);
+            color: var(--primary-color, #d76a1e); padding: 8px 16px; border-radius: 20px;
+            cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+            transition: all 0.2s; margin-bottom: 1rem; font-size: 0.9rem;
+        }
+        .how-to-btn:hover { background: var(--primary-color, #d76a1e); color: #fff; }
+
+        .tour-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 9000; display: none; opacity: 0; transition: opacity 0.3s;
+        }
+        .tour-overlay.active { display: block; opacity: 1; }
+
+        .tour-highlight {
+            position: relative; z-index: 9001 !important;
+            background: var(--bg-light, #141828) !important;
+            box-shadow: 0 0 0 4px var(--primary-color, #d76a1e), 0 0 25px rgba(0,0,0,0.7) !important;
+            border-radius: 12px; transition: all 0.3s; pointer-events: none;
+        }
+
+        .tour-tooltip {
+            position: absolute; z-index: 9002; background: var(--primary-color, #d76a1e);
+            color: #fff; padding: 15px; border-radius: 8px; width: 280px; max-width: 90vw;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6); opacity: 0;
+            transition: opacity 0.3s, transform 0.3s; transform: translateY(10px);
+        }
+        .tour-tooltip.active { opacity: 1; transform: translateY(0); }
+        .tour-tooltip::after {
+            content: ''; position: absolute; border: 10px solid transparent;
+        }
+        .tour-tooltip.pos-bottom::after { top: -20px; left: 20px; border-bottom-color: var(--primary-color, #d76a1e); }
+        .tour-tooltip.pos-top::after { bottom: -20px; left: 20px; border-top-color: var(--primary-color, #d76a1e); }
+
+        .tour-header { font-weight: bold; margin-bottom: 8px; font-size: 1.1rem; padding-right: 20px; }
+        .tour-text { font-size: 0.9rem; margin-bottom: 15px; line-height: 1.5; opacity: 0.95; }
+        .tour-nav { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
+        .tour-btn { background: rgba(0,0,0,0.25); border: none; color: #fff; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
+        .tour-btn:hover { background: rgba(0,0,0,0.4); }
+        .tour-close-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem; opacity: 0.7; transition: opacity 0.2s; }
+        .tour-close-btn:hover { opacity: 1; }
+    </style>
 </head>
 
 <body>
 
-    <header class="navbar">
+    <!-- Tour Overlay and Tooltip Elements -->
+    <div class="tour-overlay" id="homeTourOverlay"></div>
+    <div class="tour-tooltip" id="homeTourTooltip" style="display: none;">
+        <button class="tour-close-btn" onclick="endHomeTour()">✕</button>
+        <div class="tour-header" id="homeTourHeader">Step 1</div>
+        <div class="tour-text" id="homeTourText">Text</div>
+        <div class="tour-nav">
+            <button class="tour-btn" id="homeTourPrev" onclick="prevHomeTourStep()">{{ translate("Prev") }}</button>
+            <span id="homeTourCount" style="font-size: 0.85rem; font-weight: 600; opacity: 0.9;">1/4</span>
+            <button class="tour-btn" id="homeTourNext" onclick="nextHomeTourStep()">{{ translate("Next") }}</button>
+        </div>
+    </div>
+
+    <header class="navbar" id="step-nav">
         <div class="nav-inner">
             <a href="#" class="brand" title="Sahyog Sutra">
                 <img src="/static/sahyog_sutra_logo.png" alt="Sahyog Sutra Logo"
@@ -80,219 +138,226 @@
     </div>
 
     <main>
-        <section id="home" class="active">
-            <div class="home-layout">
-                <div class="home-hero">
-                    <h1>{{ translate("Hey") }} {{ translate(fullname.split()[0], save_file=False) }}, {{
-                        translate("Welcome to") }} <span class="brand-highlight">{{ translate("Sahyog Sutra") }}
-                            !</span></h1>
-                    <p>{{ translate("Unite, act, and create change. Join a campaign, volunteer your time, or start a
-                        movement — every effort weaves a stronger community.") }}</p>
+    <section id="home" class="active">
+                <div class="home-layout">
+                    <div class="home-hero" id="step-hero">
+                        <h1>{{ translate("Hey") }} {{ translate(fullname.split()[0], save_file=False) }}, {{
+                            translate("Welcome to") }} <span class="brand-highlight">{{ translate("Sahyog Sutra") }}
+                                !</span></h1>
+                        <p>{{ translate("Unite, act, and create change. Join a campaign, volunteer your time, or start a
+                            movement — every effort weaves a stronger community.") }}</p>
 
-                    <div class="hero-actions"
-                        style="margin: 2rem 0; display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap;">
-                        <button class="cta" style="margin: 0;" onclick="showSection('campaigns')">{{ translate("Explore
-                            Campaigns") }}</button>
-                        <button class="cta secondary"
-                            style="margin: 0; background: transparent; border: 2px solid var(--primary-color); color: var(--text-color);"
-                            onclick="document.getElementById('login-signup-section').scrollIntoView({behavior: 'smooth'})">{{
-                            translate("Join Community") }}</button>
-                        <button class="cta secondary"
-                            style="margin: 0; background: transparent; border: 2px solid var(--border-color); color: var(--text-muted);"
-                            onclick="document.getElementById('how-it-works-section').scrollIntoView({behavior: 'smooth'})">{{
-                            translate("Watch Guide") }}</button>
+                        <div class="hero-actions"
+                            style="margin: 2rem 0; display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+                            <button class="cta" style="margin: 0;" onclick="showSection('campaigns')">{{ translate("Explore
+                                Campaigns") }}</button>
+                            <button class="cta secondary"
+                                style="margin: 0; background: transparent; border: 2px solid var(--primary-color); color: var(--text-color);"
+                                onclick="document.getElementById('login-signup-section').scrollIntoView({behavior: 'smooth'})">{{
+                                translate("Join Community") }}</button>
+                            <button class="cta secondary"
+                                style="margin: 0; background: transparent; border: 2px solid var(--border-color); color: var(--text-muted);"
+                                onclick="startHomeTour()">💡 {{ translate("Quick Tour") }}</button>
+                        </div>
+
+                        <div class="sutra-divider"><span>सहयोग सूत्र</span></div>
+                        <div id="ndhome"></div>
+                        <script>
+                            // FIX: Use relative path to avoid Mixed Content error
+                            fetch("/static/quotes.json").then(r => r.json()).then(data => {
+                                const userLanguage = "{{ user_language }}" || "en";
+                                const quoteEl = document.getElementById('ndhome');
+                                const setQuote = () => {
+                                    const quoteKeys = Object.keys(data);
+                                    const randomQuoteKey = quoteKeys[Math.floor(Math.random() * quoteKeys.length)];
+                                    const quoteText = data[randomQuoteKey][userLanguage] || data[randomQuoteKey]["en"];
+                                    quoteEl.innerText = `{{ translate("Active Campaigns:") }} {{ active_events_length }}\n\n"${quoteText}"`;
+                                }; setQuote(); setInterval(setQuote, 6000);
+                            });
+                        </script>
+                        {% if top_organizers %}
+                        <div class="dash-card" style="margin-top: 2rem;">
+                            <h4>🏆 {{ translate("Top Organizers") }}</h4>
+                            <ul class="leaderboard-list">
+                                {% for org in top_organizers %}
+                                <li class="leaderboard-item">
+                                    <span class="leaderboard-rank">#{{ loop.index }}</span>
+                                    <img src="https://ui-avatars.com/api/?name={{ org.username }}&background=random&color=fff&size=128"
+                                        class="leaderboard-avatar">
+                                    <div style="flex-grow: 1;">
+                                        <div style="font-weight: 600; font-size: 0.9rem;">{{ org.name }}</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">{{ org.count }} {{
+                                            translate("Events") }}</div>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
                     </div>
 
-                    <div class="sutra-divider"><span>सहयोग सूत्र</span></div>
-                    <div id="ndhome"></div>
-                    <script>
-                        // FIX: Use relative path to avoid Mixed Content error
-                        fetch("/static/quotes.json").then(r => r.json()).then(data => {
-                            const userLanguage = "{{ user_language }}" || "en";
-                            const quoteEl = document.getElementById('ndhome');
-                            const setQuote = () => {
-                                const quoteKeys = Object.keys(data);
-                                const randomQuoteKey = quoteKeys[Math.floor(Math.random() * quoteKeys.length)];
-                                const quoteText = data[randomQuoteKey][userLanguage] || data[randomQuoteKey]["en"];
-                                quoteEl.innerText = `{{ translate("Active Campaigns:") }} {{ active_events_length }}\n\n"${quoteText}"`;
-                            }; setQuote(); setInterval(setQuote, 6000);
-                        });
-                    </script>
-                    {% if top_organizers %}
-                    <div class="dash-card" style="margin-top: 2rem;">
-                        <h4>🏆 {{ translate("Top Organizers") }}</h4>
-                        <ul class="leaderboard-list">
-                            {% for org in top_organizers %}
-                            <li class="leaderboard-item">
-                                <span class="leaderboard-rank">#{{ loop.index }}</span>
-                                <img src="https://ui-avatars.com/api/?name={{ org.username }}&background=random&color=fff&size=128"
-                                    class="leaderboard-avatar">
-                                <div style="flex-grow: 1;">
-                                    <div style="font-weight: 600; font-size: 0.9rem;">{{ org.name }}</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-muted);">{{ org.count }} {{
-                                        translate("Events") }}</div>
+                    <div id="how-it-works-section" class="hiw-container" style="margin: 0;">
+                        <h2 style="text-align: center; margin-bottom: 2rem;">{{ translate("How Sahyog Sutra Works") }}</h2>
+                        <div class="hiw-grid">
+                            <div class="hiw-card">
+                                <div class="hiw-icon">🔍</div>
+                                <h3>{{ translate("1. Discover") }}</h3>
+                                <p>{{ translate("Find community campaigns, social events, and volunteering opportunities near you.") }}</p>
+                            </div>
+                            <div class="hiw-card">
+                                <div class="hiw-icon">🤝</div>
+                                <h3>{{ translate("2. Volunteer") }}</h3>
+                                <p>{{ translate("Join efforts that resonate with you, track your impact, and collaborate seamlessly.") }}</p>
+                            </div>
+                            <div class="hiw-card">
+                                <div class="hiw-icon">📢</div>
+                                <h3>{{ translate("3. Organize") }}</h3>
+                                <p>{{ translate("Set up your own initiative to solve local problems. We provide multiple categories for adding your event details.") }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="login-signup-section" class="account-section-wrapper" style="width: 100%;">
+                        <div class="account-container">
+                        {% if c_user == "None" %}
+                        <div class="toggle-buttons">
+                            <button id="login-tab-btn" class="active" style="flex: 1;">{{ translate("Login") }}</button>
+                            <button id="signup-tab-btn" style="flex: 1;">{{ translate("Sign Up") }}</button>
+                        </div>
+                        <form class="auth-form active" id="loginpage">
+                            <div class="form-group">
+                                <input type="text" name="loginusername" placeholder="{{ translate('Username or Email') }}"
+                                    required />
+                            </div>
+                            <div class="form-group">
+                                <input type="password" name="loginpassword" id="loginpassword"
+                                    placeholder="{{ translate('Password') }}" required />
+                                <span class="toggle-password" onclick="togglePasswordVisibility('loginpassword')">👁️</span>
+                            </div>
+                            <div class="forget-link-container">
+                                <button type="button" id="forget-pass-link" class="forget-link">{{ translate("Forgot
+                                    Password?") }}</button>
+                            </div>
+                            <button type="submit" class="submit-btn">{{ translate("Login") }}</button>
+                        </form>
+                        <form class="auth-form" id="signuppage">
+                            <div class="form-group"><input type="text" name="nameofuser"
+                                    placeholder="{{ translate('Full Name') }}" maxlength="24" required /></div>
+                            <div class="form-group"><input type="text" name="username"
+                                    placeholder="{{ translate('Username') }}" maxlength="20" required /></div>
+
+                            <div class="form-group otp-group full-width">
+                                <input type="email" name="email" id="email" placeholder="{{ translate('Email') }}"
+                                    required />
+                                <button type="button" id="sendOtpBtn" class="otp-btn">{{ translate("Send OTP") }}</button>
+                            </div>
+                            <div class="form-group full-width"><input type="number" name="signupotp"
+                                    placeholder="{{ translate('Enter OTP') }}" oninput="this.value=this.value.slice(0,4)"
+                                    required /></div>
+
+                            <div class="form-group">
+                                <input type="password" name="password" id="signup_password"
+                                    placeholder="{{ translate('Password') }}" required />
+                                <span class="toggle-password"
+                                    onclick="togglePasswordVisibility('signup_password')">👁️</span>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" name="cpassword" id="signup_cpassword"
+                                    placeholder="{{ translate('Confirm Password') }}" required />
+                                <span class="toggle-password"
+                                    onclick="togglePasswordVisibility('signup_cpassword')">👁️</span>
+                            </div>
+                            <button type="submit" class="submit-btn">{{ translate("Sign Up") }}</button>
+                        </form>
+                        <form class="auth-form" id="forgetpasswordpage">
+                            <h3 style="text-align: center;">{{ translate("Reset Password") }}</h3>
+                            <div class="form-group full-width">
+                                <input type="text" name="forgetemail" id="forgetemail"
+                                    placeholder="{{ translate('Enter your email or username') }}" required />
+                            </div>
+                            <button type="button" id="sendForgetOtpBtn" class="submit-btn" style="margin-bottom: 1rem;">{{
+                                translate("Send OTP") }}</button>
+
+                            <div id="forget-step-2" style="display:none; width: 100%;">
+                                <div class="form-group full-width">
+                                    <input type="number" name="forgetotp" placeholder="{{ translate('Enter OTP') }}"
+                                        oninput="this.value=this.value.slice(0,4)" required />
                                 </div>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div id="how-it-works-section" class="hiw-container" style="margin: 4rem 0;">
-                <h2 style="text-align: center; margin-bottom: 2rem;">{{ translate("How Sahyog Sutra Works") }}</h2>
-                <div class="hiw-grid">
-                    <div class="hiw-card">
-                        <div class="hiw-icon">🔍</div>
-                        <h3>{{ translate("1. Discover") }}</h3>
-                        <p>{{ translate("Find community campaigns, social events, and volunteering opportunities near
-                            you.") }}</p>
-                    </div>
-                    <div class="hiw-card">
-                        <div class="hiw-icon">🤝</div>
-                        <h3>{{ translate("2. Volunteer") }}</h3>
-                        <p>{{ translate("Join efforts that resonate with you, track your impact, and collaborate
-                            seamlessly.") }}</p>
-                    </div>
-                    <div class="hiw-card">
-                        <div class="hiw-icon">📢</div>
-                        <h3>{{ translate("3. Organize") }}</h3>
-                        <p>{{ translate("Set up your own initiative to solve local problems. We provide AI tools and
-                            reach.") }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="login-signup-section" class="account-section-wrapper"
-                style="margin-top: 4rem; display: flex; justify-content: center;">
-                <div class="account-container" style="width: 100%; max-width: 500px;">
-                    {% if c_user == "None" %}
-                    <div class="toggle-buttons">
-                        <button id="login-tab-btn" class="active">{{ translate("Login") }}</button>
-                        <button id="signup-tab-btn">{{ translate("Sign Up") }}</button>
-                    </div>
-                    <form class="auth-form active" id="loginpage">
-                        <div class="form-group">
-                            <input type="text" name="loginusername" placeholder="{{ translate('Username or Email') }}"
-                                required />
-                        </div>
-                        <div class="form-group">
-                            <input type="password" name="loginpassword" id="loginpassword"
-                                placeholder="{{ translate('Password') }}" required />
-                            <span class="toggle-password" onclick="togglePasswordVisibility('loginpassword')">👁️</span>
-                        </div>
-                        <div class="forget-link-container">
-                            <button type="button" id="forget-pass-link" class="forget-link">{{ translate("Forgot
-                                Password?") }}</button>
-                        </div>
-                        <button type="submit" class="submit-btn">{{ translate("Login") }}</button>
-                    </form>
-                    <form class="auth-form" id="signuppage">
-                        <div class="form-group"><input type="text" name="nameofuser"
-                                placeholder="{{ translate('Full Name') }}" maxlength="24" required /></div>
-                        <div class="form-group"><input type="text" name="username"
-                                placeholder="{{ translate('Username') }}" maxlength="20" required /></div>
-                        <div class="form-group otp-group">
-                            <input type="email" name="email" id="email" placeholder="{{ translate('Email') }}"
-                                required />
-                            <button type="button" id="sendOtpBtn" class="otp-btn">{{ translate("Send OTP") }}</button>
-                        </div>
-                        <div class="form-group"><input type="number" name="signupotp"
-                                placeholder="{{ translate('Enter OTP') }}" oninput="this.value=this.value.slice(0,4)"
-                                required /></div>
-                        <div class="form-group">
-                            <input type="password" name="password" id="signup_password"
-                                placeholder="{{ translate('Password') }}" required />
-                            <span class="toggle-password"
-                                onclick="togglePasswordVisibility('signup_password')">👁️</span>
-                        </div>
-                        <div class="form-group">
-                            <input type="password" name="cpassword" id="signup_cpassword"
-                                placeholder="{{ translate('Confirm Password') }}" required />
-                            <span class="toggle-password"
-                                onclick="togglePasswordVisibility('signup_cpassword')">👁️</span>
-                        </div>
-                        <button type="submit" class="submit-btn">{{ translate("Sign Up") }}</button>
-                    </form>
-                    <form class="auth-form" id="forgetpasswordpage">
-                        <h3 style="text-align: center;">{{ translate("Reset Password") }}</h3>
-                        <div class="form-group">
-                            <input type="text" name="forgetemail" id="forgetemail"
-                                placeholder="{{ translate('Enter your email or username') }}" required />
-                        </div>
-                        <button type="button" id="sendForgetOtpBtn" class="submit-btn" style="margin-bottom: 1rem;">{{
-                            translate("Send OTP") }}</button>
-
-                        <div id="forget-step-2" style="display:none;">
-                            <div class="form-group">
-                                <input type="number" name="forgetotp" placeholder="{{ translate('Enter OTP') }}"
-                                    oninput="this.value=this.value.slice(0,4)" required />
+                                <div class="form-group">
+                                    <input type="password" name="newpassword" id="newpassword"
+                                        placeholder="{{ translate('New Password') }}" required />
+                                    <span class="toggle-password"
+                                        onclick="togglePasswordVisibility('newpassword')">👁️</span>
+                                </div>
+                                <div class="form-group">
+                                    <input type="password" name="confirmnewpassword" id="confirmnewpassword"
+                                        placeholder="{{ translate('Confirm New Password') }}" required />
+                                    <span class="toggle-password"
+                                        onclick="togglePasswordVisibility('confirmnewpassword')">👁️</span>
+                                </div>
+                                <button type="submit" class="submit-btn">{{ translate("Reset Password") }}</button>
                             </div>
-                            <div class="form-group">
-                                <input type="password" name="newpassword" id="newpassword"
-                                    placeholder="{{ translate('New Password') }}" required />
-                                <span class="toggle-password"
-                                    onclick="togglePasswordVisibility('newpassword')">👁️</span>
+                            <div class="back-btn-container">
+                                <button type="button" class="read-more-btn" id="backToLoginBtn">{{ translate("Back to
+                                    Login") }}</button>
                             </div>
-                            <div class="form-group">
-                                <input type="password" name="confirmnewpassword" id="confirmnewpassword"
-                                    placeholder="{{ translate('Confirm New Password') }}" required />
-                                <span class="toggle-password"
-                                    onclick="togglePasswordVisibility('confirmnewpassword')">👁️</span>
+                        </form>
+                        {% else %}
+                        <div class="profile-card-header">
+                            <img src="https://ui-avatars.com/api/?name={{ c_user }}&background=e07b2a&color=fff&size=128" class="profile-avatar" alt="avatar">
+                            <div class="profile-card-header-text">
+                                <h3>{{ translate(fullname, save_file=False) }}</h3>
+                                <span>@{{ c_user }}</span>
                             </div>
-                            <button type="submit" class="submit-btn">{{ translate("Reset Password") }}</button>
                         </div>
-                        <div class="back-btn-container">
-                            <button type="button" class="read-more-btn" id="backToLoginBtn">{{ translate("Back to
-                                Login") }}</button>
+                        <div class="profile-card-body">
+                            <div class="profile-info-row">
+                                <span class="info-label">{{ translate("Email") }}</span>
+                                <span class="info-value">{{ userdetails['email'] }}</span>
+                            </div>
+                            {% if userdetails['events'] != None %}
+                            <div class="profile-events-row">
+                                <span>{{ translate("Events") }}: <strong>{{ userdetails['events'].split(",") | length }} {{ translate("added") }}</strong></span>
+                                <button class="view-events-btn" onclick="viewyourevents('{{ c_user }}')">{{ translate("View Your Events") }}</button>
+                            </div>
+                            {% else %}
+                            <div class="profile-info-row">
+                                <span class="info-label">{{ translate("Events") }}</span>
+                                <span class="info-value" style="color: var(--text-muted);">{{ translate("No events added yet.") }}</span>
+                            </div>
+                            {% endif %}
                         </div>
-                    </form>
-                    {% else %}
-                    <h3>{{ translate("Welcome") }}, {{ translate(fullname, save_file=False) }}!</h3>
-                    <p>{{ translate("Username:") }} {{ c_user }}</p>
-                    <p>{{ translate("Email:") }} {{ userdetails['email'] }}</p>
-                    {% if userdetails['events'] != None %}
-                    <p>{{ translate("Events: Total") }} {{ userdetails['events'].split(",") | length }} {{
-                        translate("Events added by you.") }} </p>
-                    <button class="otp-btn" onclick="viewyourevents('{{ c_user }}')">{{ translate("Click Here To View
-                        Your Events") }}</button>
-                    {% else %}
-                    <p>{{ translate("Events by you: No event added by you yet.") }}</p>
-                    {% endif %}
-                    <div class="form-buttons">
-                        <button onclick="window.location.href='/user/{{ c_user }}'" class="submit-btn">{{
-                            translate("View Profile") }}</button>
-                        <button onclick="window.location.href='/clearsession';" class="delete-btn">{{
-                            translate("Logout") }}</button>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% if isadmin %}
-            <div style="margin-top: 3rem;">
-                <h2>🛠️ System Health (Admin)</h2>
-                <div class="dashboard-grid">
-                    <div class="dash-card">
-                        <h3>{{ admin_stats['total_users'] }}</h3>
-                        <p>Total Users</p>
-                    </div>
-                    <div class="dash-card">
-                        <h3>{{ admin_stats['total_events'] }}</h3>
-                        <p>Total Events</p>
-                    </div>
-                    <div class="dash-card">
-                        <h3>{{ admin_stats['pending_requests'] }}</h3>
-                        <p>Pending Requests</p>
-                    </div>
-                    <div class="dash-card">
-                        <h3>{{ admin_stats['active_threads'] }}</h3>
-                        <p>Active Threads</p>
+                        <div class="profile-card-footer">
+                            <button onclick="window.location.href='/user/{{ c_user }}'" class="submit-btn">{{ translate("View Profile") }}</button>
+                            <button onclick="window.location.href='/clearsession';" class="delete-btn">{{ translate("Logout") }}</button>
+                        </div>
+                        {% endif %}
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% endif %}
-        </section>
+                {% if isadmin %}
+                <div style="margin-top: 3rem;">
+                    <h2>🛠️ System Health (Admin)</h2>
+                    <div class="dashboard-grid">
+                        <div class="dash-card">
+                            <h3>{{ admin_stats['total_users'] }}</h3>
+                            <p>Total Users</p>
+                        </div>
+                        <div class="dash-card">
+                            <h3>{{ admin_stats['total_events'] }}</h3>
+                            <p>Total Events</p>
+                        </div>
+                        <div class="dash-card">
+                            <h3>{{ admin_stats['pending_requests'] }}</h3>
+                            <p>Pending Requests</p>
+                        </div>
+                        <div class="dash-card">
+                            <h3>{{ admin_stats['active_threads'] }}</h3>
+                            <p>Active Threads</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </section>
 
         <section id="campaigns">
             <div class="campaign-header">
@@ -380,9 +445,6 @@
             }
         };
 
-        // --- Specific Jinja-Dependent Logic (Keep here or move to a separate partial) ---
-        // This logic is too tightly coupled to Jinja loops/logic to easily move without complex refactoring
-
         // Quotes Logic
         fetch("/static/quotes.json").then(r => r.json()).then(data => {
             const userLanguage = SAHYOG_CONFIG.userLanguage || "en";
@@ -397,6 +459,133 @@
             setQuote();
             setInterval(setQuote, 6000);
         });
+
+        // --- Home Tour Logic ---
+        let currentHomeTourStep = 0;
+        let homeTourSteps = [];
+
+        function buildHomeTourSteps() {
+            homeTourSteps = [];
+
+            if (document.getElementById('step-nav')) {
+                homeTourSteps.push({
+                    targetId: 'step-nav',
+                    title: '{{ translate("1. Navigation Menu") }}',
+                    text: '{{ translate("Use this bar to navigate between pages, change your preferred language, or create new events.") }}',
+                    pos: 'bottom'
+                });
+            }
+
+            if (document.getElementById('step-hero')) {
+                homeTourSteps.push({
+                    targetId: 'step-hero',
+                    title: '{{ translate("2. Quick Actions") }}',
+                    text: '{{ translate("Explore all available campaigns or quickly jump down to join the community.") }}',
+                    pos: 'top'
+                });
+            }
+
+            if (document.getElementById('how-it-works-section')) {
+                homeTourSteps.push({
+                    targetId: 'how-it-works-section',
+                    title: '{{ translate("3. How it Works") }}',
+                    text: '{{ translate("A quick three-step guide explaining how you can discover events, volunteer, and organize your own campaigns.") }}',
+                    pos: 'top'
+                });
+            }
+
+            if (document.getElementById('login-signup-section')) {
+                homeTourSteps.push({
+                    targetId: 'login-signup-section',
+                    title: '{{ translate("4. Your Account") }}',
+                    text: '{{ translate("Login or Sign Up here. Having an account allows you to track your impact, organize events, and like campaigns.") }}',
+                    pos: 'top'
+                });
+            }
+        }
+
+        function startHomeTour() {
+            buildHomeTourSteps();
+            if (homeTourSteps.length === 0) return;
+
+            currentHomeTourStep = 0;
+            document.getElementById('homeTourOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            showHomeTourStep(currentHomeTourStep);
+        }
+
+        function endHomeTour() {
+            document.getElementById('homeTourOverlay').classList.remove('active');
+            document.getElementById('homeTourTooltip').classList.remove('active');
+            document.getElementById('homeTourTooltip').style.display = 'none';
+            document.body.style.overflow = '';
+            document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+        }
+
+        function showHomeTourStep(index) {
+            document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+
+            const step = homeTourSteps[index];
+            const target = document.getElementById(step.targetId);
+
+            if(!target) return endHomeTour();
+
+            target.classList.add('tour-highlight');
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            const tooltip = document.getElementById('homeTourTooltip');
+            document.getElementById('homeTourHeader').innerText = step.title;
+            document.getElementById('homeTourText').innerText = step.text;
+            document.getElementById('homeTourCount').innerText = `${index + 1}/${homeTourSteps.length}`;
+
+            document.getElementById('homeTourPrev').style.visibility = index === 0 ? 'hidden' : 'visible';
+            document.getElementById('homeTourNext').innerText = index === homeTourSteps.length - 1 ? '{{ translate("Finish") }}' : '{{ translate("Next") }}';
+
+            setTimeout(() => {
+                tooltip.style.display = 'block';
+                tooltip.style.visibility = 'hidden';
+                tooltip.classList.remove('pos-top', 'pos-bottom');
+                tooltip.classList.add('pos-' + step.pos);
+
+                const rect = target.getBoundingClientRect();
+
+                let topPos = rect.bottom + window.scrollY + 15;
+                if (step.pos === 'top') {
+                    topPos = rect.top + window.scrollY - tooltip.offsetHeight - 15;
+                }
+
+                let leftPos = rect.left + window.scrollX + (rect.width / 2) - (tooltip.offsetWidth / 2);
+
+                if (leftPos + tooltip.offsetWidth > window.innerWidth - 10) {
+                    leftPos = window.innerWidth - tooltip.offsetWidth - 10;
+                }
+                if (leftPos < 10) {
+                    leftPos = 10;
+                }
+
+                tooltip.style.top = topPos + 'px';
+                tooltip.style.left = leftPos + 'px';
+
+                tooltip.style.visibility = 'visible';
+                tooltip.classList.add('active');
+            }, 300);
+        }
+
+        function nextHomeTourStep() {
+            if(currentHomeTourStep < homeTourSteps.length - 1) {
+                currentHomeTourStep++;
+                showHomeTourStep(currentHomeTourStep);
+            } else {
+                endHomeTour();
+            }
+        }
+
+        function prevHomeTourStep() {
+            if(currentHomeTourStep > 0) {
+                currentHomeTourStep--;
+                showHomeTourStep(currentHomeTourStep);
+            }
+        }
     </script>
 
     <!-- Load the external script -->
