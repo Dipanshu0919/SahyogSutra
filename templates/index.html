@@ -780,55 +780,62 @@
             if (e.key === 'ArrowLeft')  hPrevStep();
         });
 
-        let _hResizeT;
-        window.addEventListener('resize', () => {
-            if (!_hOpen) return;
-            clearTimeout(_hResizeT);
-            _hResizeT = setTimeout(() => {
-                const target = _hEl(_hTourSteps[_hStep].targetId);
-                if (!target) return;
-                const rect = target.getBoundingClientRect();
-                _hSpotlight(rect);
-                _hPosition(rect);
-            }, 150);
-        });
+        <!-- ... existing code ... -->
+                let _hResizeT;
+                window.addEventListener('resize', () => {
+                    if (!_hOpen) return;
+                    clearTimeout(_hResizeT);
+                    _hResizeT = setTimeout(() => {
+                        const target = _hEl(_hTourSteps[_hStep].targetId);
+                        if (!target) return;
+                        const rect = target.getBoundingClientRect();
+                        _hSpotlight(rect);
+                        _hPosition(rect);
+                    }, 150);
+                });
 
-        const scrollTopBtn = document.getElementById("scrollTopBtn");
-        const scrollBottomBtn = document.getElementById("scrollBottomBtn");
+                const scrollTopBtn = document.getElementById("scrollTopBtn");
+                const scrollBottomBtn = document.getElementById("scrollBottomBtn");
 
-        window.addEventListener("scroll", () => {
-            const scrollY = window.scrollY;
-            const pageHeight = document.documentElement.scrollHeight - window.innerHeight;
+                function updateScrollButtons() {
+                    if (!scrollTopBtn || !scrollBottomBtn) return;
 
-            // Show top button after scrolling
-            if (scrollY > 200) {
-                scrollTopBtn.style.display = "flex";
-            } else {
-                scrollTopBtn.style.display = "none";
-            }
+                    const scrollY = window.scrollY || document.documentElement.scrollTop;
+                    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
 
-            // Show bottom button if not near bottom
-            if (scrollY < pageHeight - 200) {
-                scrollBottomBtn.style.display = "flex";
-            } else {
-                scrollBottomBtn.style.display = "none";
-            }
-        });
+                    // Show top button after scrolling down 200px
+                    scrollTopBtn.style.display = scrollY > 200 ? "flex" : "none";
 
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-        }
+                    // Show bottom button if there is enough scrollable content AND we are not at the bottom
+                    if (maxScroll > 100 && scrollY < maxScroll - 100) {
+                        scrollBottomBtn.style.display = "flex";
+                    } else {
+                        scrollBottomBtn.style.display = "none";
+                    }
+                }
+                window.addEventListener("scroll", updateScrollButtons, { passive: true });
+                window.addEventListener("resize", updateScrollButtons, { passive: true });
 
-        function scrollToBottom() {
-            window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: "smooth"
-            });
-        }
-    </script>
+                const domObserver = new MutationObserver(updateScrollButtons);
+                domObserver.observe(document.body, { childList: true, subtree: true });
+
+                setTimeout(updateScrollButtons, 100);
+                updateScrollButtons();
+
+                function scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: "smooth"
+                    });
+                }
+
+                function scrollToBottom() {
+                    window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: "smooth"
+                    });
+                }
+            </script>
 </body>
 
 </html>

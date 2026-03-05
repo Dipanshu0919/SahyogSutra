@@ -149,9 +149,9 @@ async function generateDescription() {
 
 // --- Dynamic Content Loading ---
 const contentLoaders = {
-    campaigns: { loaded: false, callback: initializeCampaignListeners },
-    addForm: { loaded: false, callback: initializeAddFormListeners },
-    pending: { loaded: false, callback: initializePendingListeners }
+    campaigns: { loaded: false, loading: false, callback: initializeCampaignListeners },
+    addForm: { loaded: false, loading: false, callback: initializeAddFormListeners },
+    pending: { loaded: false, loading: false, callback: initializePendingListeners }
 };
 
 function rerunScripts(container) {
@@ -166,9 +166,11 @@ function rerunScripts(container) {
 }
 
 async function loadContent(type, url, loadingId, contentId, retryFn) {
+    if (contentLoaders[type].loading) return; // Prevent concurrent requests
     if (contentLoaders[type].loaded && !window.location.hash.includes('campaigns')) return;
     if (type === 'campaigns') contentLoaders[type].loaded = false;
 
+    contentLoaders[type].loading = true;
     const loadingState = $(loadingId);
     const content = $(contentId);
 
@@ -187,6 +189,8 @@ async function loadContent(type, url, loadingId, contentId, retryFn) {
             <p style="color: var(--danger-color);">${SAHYOG_CONFIG.trans.loadFailed}</p>
             <button class="cta" onclick="${retryFn}">${SAHYOG_CONFIG.trans.retry}</button>
         `;
+    } finally {
+        contentLoaders[type].loading = false;
     }
 }
 
@@ -384,8 +388,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('click', e => {
         if (e.target.matches('.navlink')) {
             e.preventDefault();
-            showSection(e.target.dataset.section);
-            location.hash = e.target.dataset.section;
+            const section = e.target.dataset.section;
+            const targetHash = '#' + section;
+
+            // Only update hash, allow 'hashchange' listener to call showSection
+            // Prevents race conditions and double loading of sections
+            if (location.hash !== targetHash) {
+                location.hash = targetHash;
+            } else {
+                // If we're already on that hash, manually trigger to ensure rendering
+                showSection(section);
+            }
         }
     });
 

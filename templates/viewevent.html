@@ -134,8 +134,9 @@
     #vTourTooltip { position: fixed; z-index: 9000; width: 310px; max-width: calc(100vw - 24px); background: #111827; border: 1px solid rgba(215,106,30,0.5); border-radius: 14px; padding: 0; box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04); display: none; opacity: 0; transition: opacity .3s ease, transform .3s ease; transform: translateY(8px); overflow: hidden; }
     #vTourTooltip.visible { opacity: 1; transform: translateY(0); }
     #vTourTooltip .vt-arrow { position: absolute; width: 0; height: 0; border: 9px solid transparent; pointer-events: none; }
-    #vTourTooltip.arrow-top .vt-arrow { top: -18px; left: 28px; border-bottom-color: rgba(215,106,30,0.5); }
-    #vTourTooltip.arrow-bottom .vt-arrow { bottom: -18px; left: 28px; border-top-color: rgba(215,106,30,0.5); }
+    #vTourTooltip .vt-arrow { left: 28px; }
+    #vTourTooltip.arrow-top .vt-arrow { top: -18px; border-bottom-color: rgba(215,106,30,0.5); }
+    #vTourTooltip.arrow-bottom .vt-arrow { bottom: -18px; border-top-color: rgba(215,106,30,0.5); }
     .vt-hbar { background: linear-gradient(135deg, #d76a1e, #c45a10); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .vt-pill { background: rgba(0,0,0,0.25); color: #fff; font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
     .vt-title { color: #fff; font-weight: 700; font-size: .95rem; flex: 1; }
@@ -718,15 +719,22 @@ function _vSpotlight(rect, p = 10) {
 
 function _vPosition(rect, p = 10) {
   const tt = _vEl('vTourTooltip');
-  const TW = tt.offsetWidth || 310, TH = tt.offsetHeight || 200;
-  const VW = window.innerWidth, VH = window.innerHeight, M = 14;
+  const TW = tt.offsetWidth, TH = tt.offsetHeight;
+  const VW = window.innerWidth, VH = window.innerHeight, M = 12;
   const below = rect.bottom + p + M, above = rect.top - p - TH - M;
   let top, cls;
   if      (below + TH <= VH - 10) { top = below; cls = 'arrow-top'; }
   else if (above >= 10)            { top = above; cls = 'arrow-bottom'; }
-  else                             { top = Math.max(10, (VH - TH) / 2); cls = ''; }
-  const left = Math.max(12, Math.min(rect.left - p, VW - TW - 12));
+  else                             { top = Math.max(10, Math.min(Math.round((VH - TH) / 2), VH - TH - 10)); cls = ''; }
+  // Center horizontally over target, clamped to viewport
+  const targetCenterX = rect.left + rect.width / 2;
+  const left = Math.max(12, Math.min(Math.round(targetCenterX - TW / 2), VW - TW - 12));
   tt.style.top = top + 'px'; tt.style.left = left + 'px'; tt.className = cls;
+  // Point the arrow at the highlighted element
+  if (cls) {
+    const arrow = tt.querySelector('.vt-arrow');
+    if (arrow) arrow.style.left = Math.max(12, Math.min(Math.round(targetCenterX - left - 9), TW - 30)) + 'px';
+  }
 }
 
 function _vShow(i) {
@@ -739,7 +747,8 @@ function _vShow(i) {
   _vClearTourHighlights();
   target.classList.add('v-tour-highlight-target');
 
-  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // instant so getBoundingClientRect() reads correct post-scroll position
+  target.scrollIntoView({ behavior: 'instant', block: 'center' });
 
   _vEl('vTourTitle').textContent = step.title;
   _vEl('vTourText').textContent  = step.text;
@@ -767,17 +776,21 @@ function _vShow(i) {
     : '{{ translate("Next") }} →';
   _vDots();
 
-  setTimeout(() => {
-    const rect = target.getBoundingClientRect();
-    _vSpotlight(rect);
-    _vEl('vTourSpotlight').classList.add('visible');
-    const tt = _vEl('vTourTooltip');
-    tt.style.display = 'block'; tt.style.visibility = 'hidden'; tt.classList.remove('visible');
+  // Double rAF: first frame paints updated tooltip content,
+  // third frame measures real dimensions before positioning.
+  requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      _vPosition(rect);
-      tt.style.visibility = 'visible'; tt.classList.add('visible');
+      const rect = target.getBoundingClientRect();
+      _vSpotlight(rect);
+      _vEl('vTourSpotlight').classList.add('visible');
+      const tt = _vEl('vTourTooltip');
+      tt.style.display = 'block'; tt.style.visibility = 'hidden'; tt.classList.remove('visible');
+      requestAnimationFrame(() => {
+        _vPosition(rect);
+        tt.style.visibility = 'visible'; tt.classList.add('visible');
+      });
     });
-  }, 320);
+  });
 }
 
 function vStartTour() {
@@ -832,7 +845,15 @@ let _vResizeT;
 window.addEventListener('resize', () => {
   if (!_vOpen) return;
   clearTimeout(_vResizeT);
-  _vResizeT = setTimeout(() => _vShow(_vStep), 200);
+  _vResizeT = setTimeout(() => {
+    const step = _vTourSteps[_vStep];
+    if (!step) return;
+    const target = _vEl(step.targetId);
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    _vSpotlight(rect);
+    _vPosition(rect);
+  }, 150);
 });
 </script>
 </body>

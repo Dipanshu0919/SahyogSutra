@@ -459,19 +459,21 @@ renderList(matches, true); // true = show category tags
 });
 
 // 6. Chip Click Listener
-chipsContainer.addEventListener('click', e => {
-    const btn = e.target.closest('.cat-chip-btn');
-    if (!btn) return;
+if (chipsContainer) {
+    chipsContainer.addEventListener('click', e => {
+        const btn = e.target.closest('.cat-chip-btn');
+        if (!btn) return;
 
-    const cat = btn.dataset.category;
+        const cat = btn.dataset.category;
 
-    activeCategory = cat;
-    searchInput.value = ''; // Clear search when picking a specific category
-    updateChipsVisuals();
+        activeCategory = cat;
+        if (searchInput) searchInput.value = ''; // Clear search when picking a specific category
+        updateChipsVisuals();
 
-    // Add "|| []" to fallback to an empty list instead of undefined
-    renderList(categoriesData[cat] || [], false);
-});
+        // Add "|| []" to fallback to an empty list instead of undefined
+        renderList(categoriesData[cat] || [], false);
+    });
+}
 
 // 7. Initial Load State
 if (selectedEvent) {
@@ -489,7 +491,7 @@ renderList(categoriesData[cat], false);
 // ============================================================
 // TOUR SYSTEM — position:fixed spotlight + tooltip engine
 // ============================================================
-const _tourSteps = [
+var _tourSteps = [
 {
 targetId: 'step-name-loc',
 title: '{{ translate("1. Campaign Name and Location") }}',
@@ -523,9 +525,9 @@ legend: [
 }
 ];
 
-let _tourStep = 0;
-let _tourOpen = false;
-const _tEl = id => document.getElementById(id);
+var _tourStep = 0;
+var _tourOpen = false;
+var _tEl = id => document.getElementById(id);
 
     // Helper to clear highlights from previous steps
     function _clearTourHighlights() {
@@ -696,27 +698,34 @@ setTimeout(() => _tShowStep(_tourStep - 1), 180);
 }
 }
 
-// Keyboard nav
-document.addEventListener('keydown', e => {
-if (!_tourOpen) return;
-if (e.key === 'Escape')endTour();
-if (e.key === 'ArrowRight') nextTourStep();
-if (e.key === 'ArrowLeft')prevTourStep();
-});
+var _tResizeTimer;
 
-// Reposition on resize — just re-measure and reposition, no full re-show
-let _tResizeTimer;
-window.addEventListener('resize', () => {
-if (!_tourOpen) return;
-clearTimeout(_tResizeTimer);
-_tResizeTimer = setTimeout(() => {
-    const step = _tourSteps[_tourStep];
-    if (!step) return;
-    const target = _tEl(step.targetId);
-    if (!target) return;
-    const rect = target.getBoundingClientRect();
-    _tPositionSpotlight(rect);
-    _tPositionTooltip(rect);
-}, 150);
-});
+// Bind these events globally, but guarantee they only attach ONCE
+// so they survive multiple addevent.html fetches
+if (!window._tourEventsBound) {
+    // Keyboard nav
+    document.addEventListener('keydown', e => {
+        if (!_tourOpen) return;
+        if (e.key === 'Escape')endTour();
+        if (e.key === 'ArrowRight') nextTourStep();
+        if (e.key === 'ArrowLeft')prevTourStep();
+    });
+
+    // Reposition on resize — just re-measure and reposition, no full re-show
+    window.addEventListener('resize', () => {
+        if (!_tourOpen) return;
+        clearTimeout(_tResizeTimer);
+        _tResizeTimer = setTimeout(() => {
+            var step = _tourSteps[_tourStep];
+            if (!step) return;
+            var target = _tEl(step.targetId);
+            if (!target) return;
+            var rect = target.getBoundingClientRect();
+            _tPositionSpotlight(rect);
+            _tPositionTooltip(rect);
+        }, 150);
+    });
+
+    window._tourEventsBound = true;
+}
 </script>
