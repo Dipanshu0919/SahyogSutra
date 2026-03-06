@@ -16,109 +16,39 @@
 
     <style>
         /* ── Tour: page-specific highlight overrides only ── */
-        .sst-hl {
-            background-color: var(--bg-light, #141828) !important;
-            box-shadow: 0 0 0 12px var(--bg-light, #141828) !important;
-        }
+        .sst-hl { background-color: var(--bg-light, #141828) !important; box-shadow: 0 0 0 12px var(--bg-light, #141828) !important; }
 
         /* Keep nav transparent/authentic when targeted */
-        #step-nav.sst-hl {
-            background-color: rgba(10, 10, 14, 0.95) !important;
-            box-shadow: 0 0 0 4px rgba(10, 10, 14, 0.95) !important;
-            border-radius: 0 !important;
-        }
+        #step-nav.sst-hl { background-color: rgba(10, 10, 14, 0.95) !important; box-shadow: 0 0 0 4px rgba(10, 10, 14, 0.95) !important; border-radius: 0 !important; }
 
         /* ============================================
            LAYOUT FIXES (Cards & Auth Section Width)
            ============================================ */
-        .hiw-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            max-width: 100%;
-            margin: 0 auto 2rem auto;
-            width: 100%;
-        }
+        .hiw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; max-width: 100%; margin: 0 auto 2rem auto; width: 100%; }
 
-        .hiw-card {
-            padding: 1.5rem;
-            border-radius: 12px;
-            background: var(--bg-dark, #0a0c20);
-            border: 1px solid var(--border-color, #334155);
-            text-align: center;
-        }
+        .hiw-card { padding: 1.5rem; border-radius: 12px; background: var(--bg-dark, #0a0c20); border: 1px solid var(--border-color, #334155); text-align: center; }
 
-        .hiw-card h3 {
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            color: var(--text-color);
-        }
+        .hiw-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-color); }
 
-        .hiw-card p {
-            font-size: 0.85rem;
-            line-height: 1.5;
-            color: var(--text-muted);
-            margin: 0;
-        }
+        .hiw-card p { font-size: 0.85rem; line-height: 1.5; color: var(--text-muted); margin: 0; }
 
-        .hiw-icon {
-            font-size: 2rem;
-            margin-bottom: 0.8rem;
-        }
+        .hiw-icon { font-size: 2rem; margin-bottom: 0.8rem; }
 
         /* Fix for login/signup section width and position */
-        #login-signup-section {
-            width: 100% !important;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem 0;
-            box-sizing: border-box;
-        }
+        #login-signup-section { width: 100% !important; display: flex; justify-content: center; align-items: center; padding: 1rem 0; box-sizing: border-box; }
 
-        .account-container {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 auto;
-            box-sizing: border-box;
-        }
+        .account-container { width: 100% !important; max-width: 100% !important; margin: 0 auto; box-sizing: border-box; }
 
         /* Scroll Navigation */
-        #scrollNav {
-            position: fixed;
-            right: 20px;
-            bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 5000;
-        }
+        #scrollNav { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 5000; }
 
-        #scrollNav button {
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            background: #d76a1e;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-            transition: transform .2s, background .2s;
-        }
+        #scrollNav button { width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer; background: #d76a1e; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); transition: transform .2s, background .2s; }
 
-        #scrollNav button:hover {
-            background: #c45a10;
-            transform: translateY(-2px);
-        }
+        #scrollNav button:hover { background: #c45a10; transform: translateY(-2px); }
 
         #scrollTopBtn,
-        #scrollBottomBtn {
-            display: none;
-        }
-    </style>
+        #scrollBottomBtn { display: none; }
+</style>
 </head>
 
 <body>
@@ -141,14 +71,14 @@
     </div>
 
     <!-- ====== HOME TOUR DOM (shared structure — styled by tour-engine.css) ====== -->
-    <div id="sstOverlay" onclick="ssIndexTour.end()"></div>
+    <div id="sstOverlay"></div>
     <div id="sstSpotlight"></div>
     <div id="sstTooltip">
         <div class="sst-arrow"></div>
         <div class="sst-hbar">
             <div class="sst-title" id="sstTitle"></div>
             <div class="sst-pill" id="sstPill"></div>
-            <button class="sst-x" onclick="ssIndexTour.end()" title="Close tour">✕</button>
+            <button class="sst-x" title="Close tour">✕</button>
         </div>
         <div class="sst-body">
             <p class="sst-text" id="sstText"></p>
@@ -157,8 +87,8 @@
         <div class="sst-footer">
             <div class="sst-dots" id="sstDots"></div>
             <div class="sst-nav">
-                <button class="sst-btn" id="sstPrev" onclick="ssIndexTour.prev()">← {{ translate("Back") }}</button>
-                <button class="sst-btn primary" id="sstNext" onclick="ssIndexTour.next()">{{ translate("Next") }} →</button>
+                <button class="sst-btn" id="sstPrev">← {{ translate("Back") }}</button>
+                <button class="sst-btn primary" id="sstNext">{{ translate("Next") }} →</button>
             </div>
         </div>
     </div>
@@ -566,7 +496,7 @@
         /* ================================================================
            HOME TOUR — powered by /static/tour-engine.js
            ================================================================ */
-        window.ssIndexTour = new SahyogTour({
+        window.ssTour = new SahyogTour({
             highlightClass: 'sst-hl',
             i18n: {
                 finish: '{{ translate("Finish") }} ✓',
@@ -593,10 +523,10 @@
         });
 
         /* Global wrappers used by onclick attributes in the page body */
-        function hStartTour() { ssIndexTour.start(); }
-        function hEndTour() { ssIndexTour.end(); }
-        function hNextStep() { ssIndexTour.next(); }
-        function hPrevStep() { ssIndexTour.prev(); }
+        function hStartTour() { ssTour.start(); }
+        function hEndTour() { ssTour.end(); }
+        function hNextStep() { ssTour.next(); }
+        function hPrevStep() { ssTour.prev(); }
 
         const scrollTopBtn = document.getElementById("scrollTopBtn");
         const scrollBottomBtn = document.getElementById("scrollBottomBtn");

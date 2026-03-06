@@ -49,6 +49,25 @@ if (!window.SahyogTour) {
     _sp() { return this._el('sstSpotlight'); }
     _ov() { return this._el('sstOverlay'); }
 
+    /* ── Dynamic button binding ──────────────────────────────── */
+    /**
+     * Rewire the shared tour-DOM buttons so they call THIS instance.
+     * Only one tour runs at a time, so whoever calls start() last owns
+     * the buttons — exactly the behaviour we want.
+     */
+    _bindButtons() {
+      const self = this;
+      const next = this._el('sstNext');
+      const prev = this._el('sstPrev');
+      const ov = this._ov();
+      const xBtn = document.querySelector('#sstTooltip .sst-x');
+
+      if (next) next.onclick = () => self.next();
+      if (prev) prev.onclick = () => self.prev();
+      if (ov) ov.onclick = () => self.end();
+      if (xBtn) xBtn.onclick = () => self.end();
+    }
+
     /* ── Step resolution ──────────────────────────────────────── */
 
     /**
@@ -240,6 +259,7 @@ if (!window.SahyogTour) {
 
       this._open = true;
       this._step = 0;
+      this._bindButtons();
 
       const ov = this._ov();
       ov.style.display = 'block';
