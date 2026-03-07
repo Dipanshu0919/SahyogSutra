@@ -30,6 +30,7 @@ from googletrans import Translator
 from modules import sendlog, sendmail, sendmailthread, del_event, detailsformat
 from modules import add_event as add_event_mod
 from modules import delete_event as delete_event_mod
+from modules import email_send_message
 
 load_dotenv()
 
@@ -282,6 +283,8 @@ templates.env.filters["datetimeformat"] = datetimeformat
 def translate_text(text, lang=None, save_file=True):
     global all_translations
     global non_file_translations
+    text = text.replace("\n", "")
+    text = " ".join(text.split())
     if not lang or lang == "en":
         return text
     combined_translations = {**all_translations, **non_file_translations}
@@ -385,7 +388,7 @@ async def home(request: Request, db: AsyncDB = Depends(get_db)):
     user_lang = session.get("lang", "en")
 
     def bound_translate(text, save_file=True):
-        return translate_text(text, lang=user_lang, save_file=save_file)
+        return translate_text(text.strip(), lang=user_lang, save_file=save_file)
 
     return templates.TemplateResponse(request, template_name, {
         "active_events_length": active_events,
@@ -418,7 +421,7 @@ async def eventfromeventid(request: Request, eventid: int, db: AsyncDB = Depends
                 isadmin = True
 
     def bound_translate(text, save_file=True):
-        return translate_text(text, lang=user_lang, save_file=save_file)
+        return translate_text(text.strip(), lang=user_lang, save_file=save_file)
 
     return templates.TemplateResponse(request, "viewevent.html", {
         "isadmin": bool(isadmin),
@@ -499,7 +502,7 @@ async def sendotp(request: Request, email: str = Form(...), db: AsyncDB = Depend
     otp = random.randint(1111, 9999)
     request.session["signupotp"] = f"{otp}_{email}"
 
-    sendmailthread(email, "Signup OTP For Sahyog Sutra", f"Welome Sahyogi! \nYour signup OTP is {otp}.\nUse it to sign up in SahyogSutra\n\nThankyou :)")
+    sendmailthread(email, "Signup OTP For Sahyog Sutra", email_send_message(otp), type="html")
     return Response(content=f"OTP Sent to {email}! Please check spam folder if can't find it.", media_type="text/plain")
 
 @app.post("/setlanguage/{lang}")
@@ -591,7 +594,7 @@ async def user_profile(request: Request, username: str, db: AsyncDB = Depends(ge
     user_lang = request.session.get("lang", "en")
 
     def bound_translate(text, save_file=True):
-        return translate_text(text, lang=user_lang, save_file=save_file)
+        return translate_text(text.strip(), lang=user_lang, save_file=save_file)
 
     current_user = request.session.get("username")
     is_own_profile = (current_user == username)
@@ -615,7 +618,7 @@ async def show_add_form(request: Request):
 
     user_lang = request.session.get("lang", "en")
     def bound_translate(text, save_file=True):
-        return translate_text(text, lang=user_lang, save_file=save_file)
+        return translate_text(text.strip(), lang=user_lang, save_file=save_file)
 
     categories = {}
     with open("events.json", "r") as f:
@@ -679,7 +682,7 @@ async def show_campaigns(request: Request, db: AsyncDB = Depends(get_db)):
     sortby = request.session.get("sortby", "eventstartdate")
 
     def bound_translate(text, save_file=True):
-        return translate_text(text, lang=user_lang, save_file=save_file)
+        return translate_text(text.strip(), lang=user_lang, save_file=save_file)
 
     return templates.TemplateResponse(request, "campaigns.html", {
         "allevents": allevents,
@@ -726,8 +729,10 @@ async def signup(request: Request, db: AsyncDB = Depends(get_db)):
     if results[1]:
         return Response(content="Email Already Exists", media_type="text/plain")
 
-    if (session_otp.split("_")[0] != str(otp).strip()) or (session_otp.split("_")[1] != email):
+    if (session_otp.split("_")[0] != str(otp).strip()):
         return Response(content="Wrong Signup OTP", media_type="text/plain")
+    elif (session_otp.split("_")[1] != email):
+        return Response(content="Email Address should match the email in which OTP is sent.", media_type="text/plain")
     elif password != cpassword:
         return Response(content="Wrong Confirm Password", media_type="text/plain")
     elif len(password) < 8:

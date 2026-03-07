@@ -25,7 +25,7 @@ from .sendlog_model import sendlog
 #         smtp.send_message(msg)
 #         sendlog(f"Email sent to {receiver}")
 
-def sendmailthread(receiver, subject, message):
+def sendmailthread(receiver, subject, message, type="text"):
 
     resend.api_key = os.environ.get("RESEND_API_KEY")
 
@@ -33,7 +33,7 @@ def sendmailthread(receiver, subject, message):
       "from": "SahyogSutra Support <support@sahyogsutra.run.place>",
       "to": str(receiver),
       "subject": str(subject),
-      "html": f"<p>{message}</p>"
+      type: f"{message}"
     })
 
 
