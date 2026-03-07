@@ -1,11 +1,11 @@
 import os
-import smtplib
-import ssl
+# import smtplib
+# import ssl
 import threading
 
 import resend
 
-from email.message import EmailMessage
+# from email.message import EmailMessage
 
 from .sendlog_model import sendlog
 

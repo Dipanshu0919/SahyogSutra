@@ -11,3 +11,4 @@ tzdata
 googletrans==3.1.0a0
 legacy-cgi
 httpx
+resend
