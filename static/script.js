@@ -12,6 +12,7 @@ const toggleElements = (showEls, hideEls) => {
 function showAlert(message, type = 'info', duration = 5000, showButtons = false) {
     const alertBar = $('#alertBar');
     const alertText = $('#alertText');
+    const alertIcon = $('#alertIcon');
     const alertButtons = $('#alertButtons');
     const alertCloseBtn = $('#alertCloseBtn');
 
@@ -19,15 +20,27 @@ function showAlert(message, type = 'info', duration = 5000, showButtons = false)
 
     alertText.textContent = message;
     alertBar.classList.remove('success', 'info', 'warning', 'error');
-    if (type !== 'info') alertBar.classList.add(type);
+
+    // SVG Icons for different alert types
+    const icons = {
+        success: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>`,
+        error: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`,
+        warning: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`,
+        info: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`
+    };
+
+    if (alertIcon) alertIcon.innerHTML = icons[type] || icons['info'];
+    if (!['success', 'info', 'warning', 'error'].includes(type)) type = 'info';
+
+    alertBar.classList.add(type);
 
     if (type === 'success' && showButtons) {
         alertButtons.style.display = 'flex';
         alertCloseBtn.style.display = 'none';
-        duration = 0;
+        duration = 0; // Prevent auto close
     } else {
         alertButtons.style.display = 'none';
-        alertCloseBtn.style.display = 'block';
+        alertCloseBtn.style.display = 'flex';
     }
 
     alertBar.classList.add('show');
@@ -76,7 +89,6 @@ function filterCampaigns(searchInput) {
 
 // --- Event Actions ---
 function declineEvent(eventId) {
-    // Uses translation from global config
     let reason = null;
     while (!reason || reason.trim() === "") {
         reason = prompt(SAHYOG_CONFIG.trans.declineReason);
@@ -91,7 +103,6 @@ window.asktodelete = id => {
 
 // --- AI Generation Logic ---
 async function generateDescription() {
-    // Check global config for user status
     if (SAHYOG_CONFIG.currentUser === "None") {
         showAlert(SAHYOG_CONFIG.trans.loginForAI, 'warning');
         return;
@@ -119,7 +130,6 @@ async function generateDescription() {
         if (!response.ok) throw new Error('Generation failed');
         const data = await response.json();
 
-        // Labels map
         const labels = {
             'desc1': SAHYOG_CONFIG.trans.formal,
             'desc2': SAHYOG_CONFIG.trans.informal,
@@ -168,7 +178,7 @@ function rerunScripts(container) {
 }
 
 async function loadContent(type, url, loadingId, contentId, retryFn) {
-    if (contentLoaders[type].loading) return; // Prevent concurrent requests
+    if (contentLoaders[type].loading) return;
     if (contentLoaders[type].loaded && !window.location.hash.includes('campaigns')) return;
     if (type === 'campaigns') contentLoaders[type].loaded = false;
 
@@ -396,12 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const section = e.target.dataset.section;
             const targetHash = '#' + section;
 
-            // Only update hash, allow 'hashchange' listener to call showSection
-            // Prevents race conditions and double loading of sections
             if (location.hash !== targetHash) {
                 location.hash = targetHash;
             } else {
-                // If we're already on that hash, manually trigger to ensure rendering
                 showSection(section);
             }
         }

@@ -30,7 +30,7 @@
         #scrollNav button { width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer; background: #d76a1e; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); transition: transform .2s, background .2s; }
         #scrollNav button:hover { background: #c45a10; transform: translateY(-2px); }
         #scrollTopBtn, #scrollBottomBtn { display: none; }
-</style>
+    </style>
 </head>
 
 <body>
@@ -52,7 +52,7 @@
         </button>
     </div>
 
-    <!-- ====== HOME TOUR DOM (shared structure — styled by tour-engine.css) ====== -->
+    <!-- ====== HOME TOUR DOM ====== -->
     <div id="sstOverlay"></div>
     <div id="sstSpotlight"></div>
     <div id="sstTooltip">
@@ -114,21 +114,20 @@
         </div>
     </header>
 
+    <!-- ======== NEW ALERT SYSTEM TOAST ======== -->
     <div id="alertBar" class="alert-bar">
         <div class="alert-content">
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1;">
+            <div class="alert-text-wrapper">
                 <span class="alert-text" id="alertText"></span>
-                <div class="alert-buttons" id="alertButtons" style="display: none; gap: 10px;">
-                    <button class="alert-action-btn reload-btn" onclick="window.location.reload()"
-                        title="{{ translate('Reload') }}">{{ translate('Click here to reload') }}</button>
-                    <button class="alert-action-btn close-btn" onclick="closeAlert()"
-                        title="{{ translate('Close') }}">{{ translate('Close this message') }}</button>
-                </div>
+                <button class="alert-close" id="alertCloseBtn" onclick="closeAlert()" title="{{ translate('Close') }}">✕</button>
+            </div>
+            <div class="alert-buttons" id="alertButtons" style="display: none;">
+                <button class="alert-action-btn reload-btn" onclick="window.location.reload()" title="{{ translate('Reload') }}">{{ translate('Reload Page') }}</button>
+                <button class="alert-action-btn close-btn" onclick="closeAlert()" title="{{ translate('Close') }}">{{ translate('Close this message') }}</button>
             </div>
         </div>
-        <button class="alert-close" id="alertCloseBtn" onclick="closeAlert()"
-            title="{{ translate('Close') }}">✕</button>
     </div>
+    <!-- ======================================== -->
 
     <div id="sideChatDrawer" class="chat-drawer">
         <div class="chat-header">

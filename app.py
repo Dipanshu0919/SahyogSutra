@@ -39,6 +39,7 @@ translations_lock = threading.Lock()
 active_events = 0
 app_running_port = int(os.environ.get("PORT", 8000))
 app_running_host = "0.0.0.0"
+# hostsite = None
 
 all_translations = {}
 non_file_translations = {}
@@ -338,6 +339,9 @@ async def internal_exception_handler(request, exc):
 
 @app.get("/")
 async def home(request: Request, db: AsyncDB = Depends(get_db)):
+    # global hostsite
+    # if not hostsite:
+    #     hostsite = request.base_url
     session = request.session
     currentuser = session.get("name", "User")
     currentuname = session.get("username")
@@ -924,6 +928,7 @@ async def api(request: Request, db: AsyncDB = Depends(get_db)):
         "current user": user_details
     }
     return JSONResponse(content=toreturn)
+
 
 @app.get("/checkeventloop")
 def checkeventloop():
