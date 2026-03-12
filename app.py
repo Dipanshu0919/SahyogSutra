@@ -177,7 +177,7 @@ templates = Jinja2Templates(directory="templates")
 # --- Database Connection Pool ---
 # Opens 3 connections eagerly at startup (fast), then grows to 30 in background.
 
-_DB_POOL_MAX = 30        # SQLiteCloud plan limit
+_DB_POOL_MAX = 15        # SQLiteCloud plan limit
 _DB_POOL_EAGER = 3       # opened synchronously before first request
 _db_pool: list = []
 _db_pool_lock = threading.Lock()
@@ -212,7 +212,7 @@ def _grow_pool_background():
                     conn.close()
                     break
         except Exception as e:
-            # print(f"Pool grow error: {e}")
+            print(f"Pool grow error: {e}")
             time.sleep(0.5)
     print(f"DB pool fully grown: {len(_db_pool)} connections")
 
@@ -233,7 +233,7 @@ def _refill_one():
             else:
                 conn.close()  # pool was already topped up by someone else
     except Exception as e:
-        pass
+        print(f"Pool refill error: {e}")
 
 def _pool_acquire() -> tuple:
     """
@@ -456,24 +456,28 @@ async def home(request: Request, db: AsyncDB = Depends(get_db)):
     admin_stats = {}
 
     if currentuname:
-        await db.execute("SELECT * FROM userdetails WHERE username=?", (currentuname,))
-        ud = await db.fetchone()
-        if ud:
-            if ud["role"] == "admin":
-                isadmin = True
-                # Run all admin stat queries in parallel
-                results = await run_queries_parallel(
-                    ("SELECT COUNT(*) as count FROM userdetails", (), "one"),
-                    ("SELECT COUNT(*) as count FROM eventreq", (), "one"),
-                    ("SELECT COUNT(*) as count FROM eventdetail", (), "one"),
-                )
-                admin_stats = {
-                    "total_users": results[0]["count"],
-                    "pending_requests": results[1]["count"],
-                    "active_threads": threading.active_count(),
-                    "total_events": results[2]["count"]
-                }
-            userdetails = dict(ud)
+        # Use session data — no DB hit needed for basic user info
+        isadmin = session.get("role") == "admin"
+        userdetails = {
+            "username": currentuname,
+            "name": session.get("name", ""),
+            "email": session.get("email", ""),
+            "role": session.get("role", "user"),
+            "events": session.get("events", ""),
+        }
+        if isadmin:
+            # Admin stats still need DB — but only for admins
+            results = await run_queries_parallel(
+                ("SELECT COUNT(*) as count FROM userdetails", (), "one"),
+                ("SELECT COUNT(*) as count FROM eventreq", (), "one"),
+                ("SELECT COUNT(*) as count FROM eventdetail", (), "one"),
+            )
+            admin_stats = {
+                "total_users": results[0]["count"],
+                "pending_requests": results[1]["count"],
+                "active_threads": threading.active_count(),
+                "total_events": results[2]["count"]
+            }
 
     # Leaderboard is now fetched client-side via /api/leaderboard for speed
     top_organizers = []  # populated by JS after page load
@@ -502,17 +506,16 @@ async def eventfromeventid(request: Request, eventid: int, db: AsyncDB = Depends
     session = request.session
     await db.execute("SELECT * FROM eventdetail WHERE eventid=(?)", (eventid, ))
     getevent = await db.fetchone()
-    isadmin = False
     currentuname = session.get("username")
     user_lang = session.get("lang", "en")
-    ud = {}
-
-    if currentuname:
-        await db.execute("SELECT * FROM userdetails WHERE username=?", (currentuname,))
-        ud = await db.fetchone()
-        if ud:
-            if ud["role"] == "admin":
-                isadmin = True
+    isadmin = session.get("role") == "admin"
+    ud = {
+        "username": currentuname or "",
+        "name": session.get("name", ""),
+        "email": session.get("email", ""),
+        "role": session.get("role", "user"),
+        "events": session.get("events", ""),
+    } if currentuname else {}
 
     def bound_translate(text, save_file=True):
         return translate_text(text.strip(), lang=user_lang, save_file=save_file)
@@ -762,14 +765,14 @@ async def show_campaigns(request: Request, db: AsyncDB = Depends(get_db)):
             "ts": time.time()
         }
 
-    isadmin = False
-    userdetails = {}
-    if currentuname:
-        await db.execute("SELECT * FROM userdetails WHERE username=?", (currentuname,))
-        ud = await db.fetchone()
-        if ud and ud["role"] == "admin":
-            isadmin = True
-        userdetails = dict(ud) if ud else {}
+    isadmin = request.session.get("role") == "admin"
+    userdetails = {
+        "username": currentuname or "",
+        "name": request.session.get("name", ""),
+        "email": request.session.get("email", ""),
+        "role": request.session.get("role", "user"),
+        "events": request.session.get("events", ""),
+    } if currentuname else {}
 
     viewuserevent = request.session.pop("vieweventusername", str(currentuname))
     ve = request.session.pop("viewyourevents", False)
@@ -839,6 +842,8 @@ async def signup(request: Request, db: AsyncDB = Depends(get_db)):
         request.session["username"] = username
         request.session["name"] = name
         request.session["email"] = email
+        request.session["role"] = "user"
+        request.session["events"] = ""
         request.session.pop("signupotp", None)
         sendlog(f"New Signup: {name} ({username})")
         return Response(content="Signup Success ✅", media_type="text/plain")
@@ -862,6 +867,8 @@ async def login(request: Request, db: AsyncDB = Depends(get_db)):
         request.session["username"] = fetched["username"]
         request.session["name"] = fetched["name"]
         request.session["email"] = fetched["email"]
+        request.session["role"] = fetched["role"] or "user"
+        request.session["events"] = fetched["events"] or ""
         sendlog(f"User Login: {fetched['name']} ({fetched['username']})")
         return Response(content="Login Success ✅", media_type="text/plain")
 
@@ -871,19 +878,16 @@ async def addnewevent(request: Request, db: AsyncDB = Depends(get_db)):
     session_username = request.session.get("username")
     target_username = session_username
 
-    if session_username:
-        await db.execute("SELECT role FROM userdetails WHERE username=?", (session_username,))
-        user_row = await db.fetchone()
-        if user_row and user_row["role"] == "admin":
-            if form_data.get("username"):
-                target_username = form_data.get("username")
-                try:
-                    await db.execute(
-                        "DELETE FROM eventreq WHERE eventname=? AND username=?",
-                        (form_data.get("eventname"), target_username)
-                    )
-                except Exception as e:
-                    print(f"Error cleaning up eventreq: {e}")
+    if session_username and request.session.get("role") == "admin":
+        if form_data.get("username"):
+            target_username = form_data.get("username")
+            try:
+                await db.execute(
+                    "DELETE FROM eventreq WHERE eventname=? AND username=?",
+                    (form_data.get("eventname"), target_username)
+                )
+            except Exception as e:
+                print(f"Error cleaning up eventreq: {e}")
 
     # Module still uses sync cursor — wrap in executor
     loop = asyncio.get_event_loop()
@@ -909,19 +913,16 @@ async def pendingevents(request: Request, db: AsyncDB = Depends(get_db)):
     if not uname:
         return Response(content="Login First", media_type="text/plain")
 
-    await db.execute("SELECT * FROM userdetails WHERE username=?", (uname,))
-    f = await db.fetchone()
-    if f["role"] == "admin":
-        await db.execute("SELECT * FROM eventreq")
-        pe = [dict(row) for row in await db.fetchall()]
-
-        categories = {}
-        with open("events.json", "r") as f:
-            categories = json.load(f)
-
-        return templates.TemplateResponse(request, "pendingevents.html", {"pendingevents": pe, "categories": categories})
-    else:
+    if request.session.get("role") != "admin":
         return RedirectResponse(url="/", status_code=303)
+    await db.execute("SELECT * FROM eventreq")
+    pe = [dict(row) for row in await db.fetchall()]
+
+    categories = {}
+    with open("events.json", "r") as f:
+        categories = json.load(f)
+
+    return templates.TemplateResponse(request, "pendingevents.html", {"pendingevents": pe, "categories": categories})
 
 @app.get("/deleteevent/{eventid}")
 async def deleteevent(request: Request, eventid: int, db: AsyncDB = Depends(get_db)):
@@ -941,6 +942,8 @@ async def logout(request: Request):
     u = request.session.pop('username', None)
     n = request.session.pop('name', None)
     e = request.session.pop('email', None)
+    request.session.pop('role', None)
+    request.session.pop('events', None)
     sendlog(f"User Logout: {n} ({u}) {e}")
     return RedirectResponse(url="/", status_code=303)
 
@@ -956,10 +959,8 @@ async def save_draft(request: Request):
 @app.get("/decline_event/{eventid}/{reason}")
 async def decline_event(request: Request, eventid: int, reason: str, db: AsyncDB = Depends(get_db)):
     u = request.session.get("username")
-    if u:
-        await db.execute("SELECT * FROM userdetails WHERE username=?", (u,))
-        f = await db.fetchone()
-        if f["role"] == "admin":
+    if u and request.session.get("role") == "admin":
+        if True:
             await db.execute("SELECT * FROM eventreq WHERE eventid=?", (eventid,))
             email_row = await db.fetchone()
 
