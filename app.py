@@ -52,6 +52,10 @@ _translation_executor = ThreadPoolExecutor(max_workers=50)
 _campaigns_cache: dict = {"data": None, "ts": 0}
 CAMPAIGNS_CACHE_TTL = 30  # seconds
 
+# --- Leaderboard Cache ---
+_leaderboard_cache: dict = {"data": None, "ts": 0}
+LEADERBOARD_CACHE_TTL = 60  # seconds
+
 # --- Helper Functions ---
 
 def load_translations():
@@ -140,6 +144,9 @@ def check_rate_limit(ip: str, window: int = 30) -> tuple[bool, int]:
 async def lifespan(app: FastAPI):
     # Startup
     load_translations()
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, _init_pool_eager)  # open 3 connections fast
+    threading.Thread(target=_grow_pool_background, name="DBPoolGrow", daemon=True).start()  # grow to 30 in background
     threading.Thread(target=translation_file_thread, name="TranslationFileThread", daemon=True).start()
     task = asyncio.create_task(checkevent())
     print("Starting background check also")
@@ -147,6 +154,14 @@ async def lifespan(app: FastAPI):
     # Shutdown
     task.cancel()
     _translation_executor.shutdown(wait=False)
+    # Close all pooled connections gracefully
+    with _db_pool_lock:
+        for db in _db_pool:
+            try:
+                db.close()
+            except Exception:
+                pass
+        _db_pool.clear()
 
 app = FastAPI(lifespan=lifespan)
 
@@ -159,38 +174,126 @@ sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# --- Database Helpers ---
-# SQLiteCloud is synchronous, so we wrap DB calls in run_in_executor
-# to avoid blocking the async event loop.
+# --- Database Connection Pool ---
+# Opens 3 connections eagerly at startup (fast), then grows to 30 in background.
 
-def sqldb(function):
-    @wraps(function)
-    def wrapper(*args, **kwargs):
-        db = sq.connect(os.environ.get("SQLITECLOUD"))
-        db.row_factory = sq.Row
-        c = db.cursor()
-        final = function(c, *args, **kwargs)
-        db.commit()
-        db.close()
-        return final
-    return wrapper
+_DB_POOL_MAX = 30        # SQLiteCloud plan limit
+_DB_POOL_EAGER = 3       # opened synchronously before first request
+_db_pool: list = []
+_db_pool_lock = threading.Lock()
 
-def _sync_get_db_conn():
-    """Opens a synchronous SQLiteCloud connection."""
+def _open_connection():
+    """Open and configure one SQLiteCloud connection."""
     db = sq.connect(os.environ.get("SQLITECLOUD"))
     db.row_factory = sq.Row
     return db
 
+def _init_pool_eager():
+    """Open EAGER connections immediately — fast, unblocks startup."""
+    for _ in range(_DB_POOL_EAGER):
+        try:
+            conn = _open_connection()
+            with _db_pool_lock:
+                _db_pool.append(conn)
+        except Exception as e:
+            print(f"Pool eager init error: {e}")
+    print(f"DB pool eager ready: {len(_db_pool)} connections")
+
+def _grow_pool_background():
+    """Grow pool to MAX in a background daemon thread — does not block startup."""
+    target = _DB_POOL_MAX - _DB_POOL_EAGER
+    for _ in range(target):
+        try:
+            conn = _open_connection()
+            with _db_pool_lock:
+                if len(_db_pool) < _DB_POOL_MAX:
+                    _db_pool.append(conn)
+                else:
+                    conn.close()
+                    break
+        except Exception as e:
+            # print(f"Pool grow error: {e}")
+            time.sleep(0.5)
+    print(f"DB pool fully grown: {len(_db_pool)} connections")
+
+def _pool_size() -> int:
+    """Current number of idle connections in the pool."""
+    with _db_pool_lock:
+        return len(_db_pool)
+
+def _refill_one():
+    """Open one new connection and add it to the pool (runs in a daemon thread)."""
+    try:
+        conn = _open_connection()
+        with _db_pool_lock:
+            if len(_db_pool) < _DB_POOL_MAX:
+                _db_pool.append(conn)
+                # Uncomment below to see refill activity in logs:
+                # print(f"Pool refilled → {len(_db_pool)} idle")
+            else:
+                conn.close()  # pool was already topped up by someone else
+    except Exception as e:
+        pass
+
+def _pool_acquire() -> tuple:
+    """
+    Borrow a (db, cursor) from the pool.
+    Immediately kicks off a background refill so the pool stays full.
+    Falls back to opening a fresh connection if pool is empty (safety net).
+    """
+    with _db_pool_lock:
+        if _db_pool:
+            db = _db_pool.pop()
+            pool_after = len(_db_pool)
+        else:
+            db = None
+            pool_after = 0
+
+    if db is None:
+        print("Pool empty — opening fallback connection")
+        db = _open_connection()
+
+    # Always try to refill the slot we just took
+    if pool_after < _DB_POOL_MAX:
+        threading.Thread(target=_refill_one, daemon=True, name="DBPoolRefill").start()
+
+    c = db.cursor()
+    return db, c
+
+def _pool_release(db):
+    """Return a connection to the pool. Closes it only if pool is already full."""
+    try:
+        db.commit()
+    except Exception:
+        pass
+    with _db_pool_lock:
+        if len(_db_pool) < _DB_POOL_MAX:
+            _db_pool.append(db)
+        else:
+            try:
+                db.close()
+            except Exception:
+                pass
+
+# Keep sqldb decorator working for any legacy @sqldb-decorated helpers
+def sqldb(function):
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        db, c = _pool_acquire()
+        try:
+            final = function(c, *args, **kwargs)
+            db.commit()
+            return final
+        finally:
+            _pool_release(db)
+    return wrapper
+
 async def run_query(query: str, params: tuple = (), fetchmode: str = "all"):
-    """
-    Run a single SELECT query asynchronously using run_in_executor.
-    fetchmode: "all", "one", or "none" (for INSERT/UPDATE/DELETE)
-    """
+    """Run a single query asynchronously from the pool."""
     loop = asyncio.get_event_loop()
 
     def _execute():
-        db = _sync_get_db_conn()
-        c = db.cursor()
+        db, c = _pool_acquire()
         try:
             c.execute(query, params)
             if fetchmode == "all":
@@ -202,35 +305,29 @@ async def run_query(query: str, params: tuple = (), fetchmode: str = "all"):
             db.commit()
             return result
         finally:
-            db.close()
+            _pool_release(db)
 
     return await loop.run_in_executor(None, _execute)
 
 async def run_queries_parallel(*queries):
-    """
-    Run multiple (query, params, fetchmode) tuples in parallel.
-    Returns results in the same order.
-    """
+    """Run multiple (query, params, fetchmode) tuples in parallel."""
     tasks = [run_query(q, p, f) for q, p, f in queries]
     return await asyncio.gather(*tasks)
 
 # --- Synchronous DB for non-async contexts (SocketIO, background tasks) ---
 def sync_db():
-    db = _sync_get_db_conn()
-    db.row_factory = sq.Row
-    c = db.cursor()
+    db, c = _pool_acquire()
     return db, c
 
 def close_db(db):
-    db.commit()
-    db.close()
+    _pool_release(db)
 
 # --- FastAPI DB Dependency (async-safe) ---
 class AsyncDB:
-    """Async-compatible DB wrapper for use in route handlers."""
-    def __init__(self):
-        self._db = _sync_get_db_conn()
-        self._c = self._db.cursor()
+    """Async-compatible DB wrapper — borrows from pool, returns on close."""
+    def __init__(self, db, cursor):
+        self._db = db
+        self._c = cursor
         self._loop = asyncio.get_event_loop()
 
     def _run(self, fn):
@@ -259,10 +356,12 @@ class AsyncDB:
         await self._run(_do)
 
     def close(self):
-        self._db.close()
+        _pool_release(self._db)
 
 async def get_db():
-    adb = AsyncDB()
+    loop = asyncio.get_event_loop()
+    db, c = await loop.run_in_executor(None, _pool_acquire)
+    adb = AsyncDB(db, c)
     try:
         yield adb
         await adb.commit()
@@ -376,17 +475,8 @@ async def home(request: Request, db: AsyncDB = Depends(get_db)):
                 }
             userdetails = dict(ud)
 
-    # Leaderboard Logic (Top 5 Organizers)
-    await db.execute("SELECT name, username, events FROM userdetails")
-    all_users = await db.fetchall()
-    organizers = []
-    for u in all_users:
-        event_count = len(u["events"].split(",")) if u["events"] else 0
-        if event_count > 0:
-            organizers.append({"name": u["name"], "username": u["username"], "count": event_count})
-
-    organizers.sort(key=lambda x: x["count"], reverse=True)
-    top_organizers = organizers[:5]
+    # Leaderboard is now fetched client-side via /api/leaderboard for speed
+    top_organizers = []  # populated by JS after page load
 
     template_name = session.get("template", "index.html")
     user_lang = session.get("lang", "en")
@@ -912,7 +1002,26 @@ async def dummyevent(request: Request):
     request.session["endtime"] = f"{random.randint(10, 12)}:{random.randint(10, 59)}"
     return RedirectResponse(url="/#add", status_code=303)
 
-@app.get("/api")
+@app.get("/api/leaderboard")
+async def api_leaderboard():
+    """Returns top 5 organizers. Cached for 60s so it's near-instant."""
+    global _leaderboard_cache
+    now = time.time()
+    if _leaderboard_cache["data"] and now - _leaderboard_cache["ts"] < LEADERBOARD_CACHE_TTL:
+        return JSONResponse(content=_leaderboard_cache["data"])
+
+    all_users = await run_query("SELECT name, username, events FROM userdetails", fetchmode="all")
+    organizers = []
+    for u in all_users:
+        event_count = len(u["events"].split(",")) if u["events"] else 0
+        if event_count > 0:
+            organizers.append({"name": u["name"], "username": u["username"], "count": event_count})
+
+    organizers.sort(key=lambda x: x["count"], reverse=True)
+    top5 = organizers[:5]
+    _leaderboard_cache = {"data": top5, "ts": now}
+    return JSONResponse(content=top5)
+
 async def api(request: Request, db: AsyncDB = Depends(get_db)):
     await db.execute("SELECT * FROM eventdetail")
     events = [dict(row) for row in await db.fetchall()]

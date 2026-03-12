@@ -30,6 +30,9 @@
         #scrollNav button { width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer; background: #d76a1e; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); transition: transform .2s, background .2s; }
         #scrollNav button:hover { background: #c45a10; transform: translateY(-2px); }
         #scrollTopBtn, #scrollBottomBtn { display: none; }
+        /* Leaderboard skeleton animation */
+        @keyframes lb-shimmer { 0%{opacity:0.3} 50%{opacity:0.6} 100%{opacity:0.3} }
+        .lb-skeleton-bar { animation: lb-shimmer 1.4s ease-in-out infinite; background: var(--border-color, #334155); border-radius: 4px; }
     </style>
 </head>
 
@@ -37,18 +40,11 @@
 
     <!-- Scroll Navigation Buttons -->
     <div id="scrollNav">
-        <!-- Go Up -->
         <button id="scrollTopBtn" onclick="scrollToTop()" title="Go to Top">
-            <svg viewBox="0 0 24 24" width="22" height="22">
-                <path fill="currentColor" d="M12 5l-7 7h4v7h6v-7h4z" />
-            </svg>
+            <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 5l-7 7h4v7h6v-7h4z" /></svg>
         </button>
-
-        <!-- Go Bottom -->
         <button id="scrollBottomBtn" onclick="scrollToBottom()" title="Go to Bottom">
-            <svg viewBox="0 0 24 24" width="22" height="22">
-                <path fill="currentColor" d="M12 19l7-7h-4V5H9v7H5z" />
-            </svg>
+            <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 19l7-7h-4V5H9v7H5z" /></svg>
         </button>
     </div>
 
@@ -141,55 +137,35 @@
         <section id="home" class="active">
             <div class="home-layout">
                 <div class="home-hero" id="step-hero">
-                    <h1>{{ translate("Hey there! We're glad you're here. Welcome to") }} <span class="brand-highlight">{{ translate("Sahyog Sutra") }}
-                            !</span></h1>
-                    <p>{{ translate("Unite, act, and create change. Join a campaign, volunteer your time, or start a
-                        movement — every effort weaves a stronger community.") }}</p>
+                    <h1>{{ translate("Hey there! We're glad you're here. Welcome to") }} <span class="brand-highlight">{{ translate("Sahyog Sutra") }}!</span></h1>
+                    <p>{{ translate("Unite, act, and create change. Join a campaign, volunteer your time, or start a movement — every effort weaves a stronger community.") }}</p>
 
-                    <div class="hero-actions"
-                        style="margin: 2rem 0; display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap;">
-                        <button class="cta" style="margin: 0;" onclick="showSection('campaigns')">{{ translate("Explore
-                            Campaigns") }}</button>
-
-                        <button class="cta secondary"
-                            style="margin: 0; background: transparent; border: 2px solid var(--border-color); color: var(--text-muted);"
-                            onclick="hStartTour()">💡 {{ translate("Quick Tour") }}</button>
+                    <div class="hero-actions" style="margin: 2rem 0; display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+                        <button class="cta" style="margin: 0;" onclick="showSection('campaigns')">{{ translate("Explore Campaigns") }}</button>
+                        <button class="cta secondary" style="margin: 0; background: transparent; border: 2px solid var(--border-color); color: var(--text-muted);" onclick="hStartTour()">💡 {{ translate("Quick Tour") }}</button>
                     </div>
 
                     <div class="sutra-divider"><span>सहयोग सूत्र</span></div>
                     <div id="ndhome"></div>
-                    <script>
-                        // FIX: Use relative path to avoid Mixed Content error
-                        fetch("/static/quotes.json").then(r => r.json()).then(data => {
-                            const userLanguage = "{{ user_language }}" || "en";
-                            const quoteEl = document.getElementById('ndhome');
-                            const setQuote = () => {
-                                const quoteKeys = Object.keys(data);
-                                const randomQuoteKey = quoteKeys[Math.floor(Math.random() * quoteKeys.length)];
-                                const quoteText = data[randomQuoteKey][userLanguage] || data[randomQuoteKey]["en"];
-                                quoteEl.innerText = `{{ translate("Active Campaigns:") }} {{ active_events_length }}\n\n"${quoteText}"`;
-                            }; setQuote(); setInterval(setQuote, 6000);
-                        });
-                    </script>
-                    {% if top_organizers %}
-                    <div class="dash-card" style="margin-top: 2rem;">
+
+                    <!-- ===== LEADERBOARD (lazy-loaded via JS) ===== -->
+                    <div class="dash-card" style="margin-top: 2rem;" id="leaderboard-card">
                         <h4>🏆 {{ translate("Top Organizers") }}</h4>
-                        <ul class="leaderboard-list">
-                            {% for org in top_organizers %}
-                            <li class="leaderboard-item">
-                                <span class="leaderboard-rank">#{{ loop.index }}</span>
-                                <img src="https://ui-avatars.com/api/?name={{ org.username }}&background=random&color=fff&size=128"
-                                    class="leaderboard-avatar">
-                                <div style="flex-grow: 1;">
-                                    <div style="font-weight: 600; font-size: 0.9rem;">{{ org.name }}</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-muted);">{{ org.count }} {{
-                                        translate("Events") }}</div>
+                        <ul class="leaderboard-list" id="leaderboard-list">
+                            <!-- Skeleton rows shown while fetching -->
+                            {% for _ in range(3) %}
+                            <li class="leaderboard-item" style="gap:0.75rem;">
+                                <span class="leaderboard-rank lb-skeleton-bar" style="width:1.4rem;height:1rem;display:inline-block;"></span>
+                                <div class="lb-skeleton-bar" style="width:32px;height:32px;border-radius:50%;flex-shrink:0;"></div>
+                                <div style="flex-grow:1;">
+                                    <div class="lb-skeleton-bar" style="height:0.7rem;width:55%;margin-bottom:6px;"></div>
+                                    <div class="lb-skeleton-bar" style="height:0.6rem;width:30%;"></div>
                                 </div>
                             </li>
                             {% endfor %}
                         </ul>
                     </div>
-                    {% endif %}
+                    <!-- ===== END LEADERBOARD ===== -->
                 </div>
 
                 <div id="how-it-works-section" class="hiw-container" style="margin: 0;">
@@ -198,26 +174,21 @@
                         <div class="hiw-card">
                             <div class="hiw-icon">📢</div>
                             <h3>{{ translate("1. Create a Campaign") }}</h3>
-                            <p>{{ translate("Submit a community campaign across 10 categories and 100+ event types —
-                                from environment drives to hackathons. Add your dates, location, and description — or
-                                let AI write it for you. Your event goes live after admin approval.") }}</p>
+                            <p>{{ translate("Submit a community campaign across 10 categories and 100+ event types — from environment drives to hackathons. Add your dates, location, and description — or let AI write it for you. Your event goes live after admin approval.") }}</p>
                         </div>
                         <div class="hiw-card">
                             <div class="hiw-icon">🔍</div>
                             <h3>{{ translate("2. Explore & Engage") }}</h3>
-                            <p>{{ translate("Browse campaigns by category, search by keyword, and filter by what matters
-                                to you. Like events to show support, share them on WhatsApp, add them to your calendar,
-                                and translate them into your preferred language.") }}</p>
+                            <p>{{ translate("Browse campaigns by category, search by keyword, and filter by what matters to you. Like events to show support, share them on WhatsApp, add them to your calendar, and translate them into your preferred language.") }}</p>
                         </div>
                         <div class="hiw-card">
                             <div class="hiw-icon">💬</div>
                             <h3>{{ translate("3. Connect & Collaborate") }}</h3>
-                            <p>{{ translate("Every campaign has a built-in group chat. Coordinate with organizers and
-                                other participants in real time. View organizer profiles, track top contributors on the
-                                leaderboard, and be part of the community.") }}</p>
+                            <p>{{ translate("Every campaign has a built-in group chat. Coordinate with organizers and other participants in real time. View organizer profiles, track top contributors on the leaderboard, and be part of the community.") }}</p>
                         </div>
                     </div>
                 </div>
+
                 <div id="login-signup-section" class="account-section-wrapper">
                     <div class="account-container">
                         {% if c_user == "None" %}
@@ -227,89 +198,62 @@
                         </div>
                         <form class="auth-form active" id="loginpage">
                             <div class="form-group">
-                                <input type="text" name="loginusername"
-                                    placeholder="{{ translate('Username or Email') }}" required />
+                                <input type="text" name="loginusername" placeholder="{{ translate('Username or Email') }}" required />
                             </div>
                             <div class="form-group">
-                                <input type="password" name="loginpassword" id="loginpassword"
-                                    placeholder="{{ translate('Password') }}" required />
-                                <span class="toggle-password"
-                                    onclick="togglePasswordVisibility('loginpassword')">👁️</span>
+                                <input type="password" name="loginpassword" id="loginpassword" placeholder="{{ translate('Password') }}" required />
+                                <span class="toggle-password" onclick="togglePasswordVisibility('loginpassword')">👁️</span>
                             </div>
                             <div class="forget-link-container">
-                                <button type="button" id="forget-pass-link" class="forget-link">{{ translate("Forgot
-                                    Password?") }}</button>
+                                <button type="button" id="forget-pass-link" class="forget-link">{{ translate("Forgot Password?") }}</button>
                             </div>
                             <button type="submit" class="submit-btn">{{ translate("Login") }}</button>
                         </form>
                         <form class="auth-form" id="signuppage">
-                            <div class="form-group"><input type="text" name="nameofuser"
-                                    placeholder="{{ translate('Full Name') }}" maxlength="24" required /></div>
-                            <div class="form-group"><input type="text" name="username"
-                                    placeholder="{{ translate('Username') }}" maxlength="20" required /></div>
-
+                            <div class="form-group"><input type="text" name="nameofuser" placeholder="{{ translate('Full Name') }}" maxlength="24" required /></div>
+                            <div class="form-group"><input type="text" name="username" placeholder="{{ translate('Username') }}" maxlength="20" required /></div>
                             <div class="form-group otp-group full-width">
-                                <input type="email" name="email" id="email" placeholder="{{ translate('Email') }}"
-                                    required />
-                                <button type="button" id="sendOtpBtn" class="otp-btn">{{ translate("Send OTP")
-                                    }}</button>
+                                <input type="email" name="email" id="email" placeholder="{{ translate('Email') }}" required />
+                                <button type="button" id="sendOtpBtn" class="otp-btn">{{ translate("Send OTP") }}</button>
                             </div>
-                            <div class="form-group full-width"><input type="number" name="signupotp"
-                                    placeholder="{{ translate('Enter OTP') }}"
-                                    oninput="this.value=this.value.slice(0,4)" required /></div>
-
+                            <div class="form-group full-width"><input type="number" name="signupotp" placeholder="{{ translate('Enter OTP') }}" oninput="this.value=this.value.slice(0,4)" required /></div>
                             <div class="form-group">
-                                <input type="password" name="password" id="signup_password"
-                                    placeholder="{{ translate('Password') }}" required />
-                                <span class="toggle-password"
-                                    onclick="togglePasswordVisibility('signup_password')">👁️</span>
+                                <input type="password" name="password" id="signup_password" placeholder="{{ translate('Password') }}" required />
+                                <span class="toggle-password" onclick="togglePasswordVisibility('signup_password')">👁️</span>
                             </div>
                             <div class="form-group">
-                                <input type="password" name="cpassword" id="signup_cpassword"
-                                    placeholder="{{ translate('Confirm Password') }}" required />
-                                <span class="toggle-password"
-                                    onclick="togglePasswordVisibility('signup_cpassword')">👁️</span>
+                                <input type="password" name="cpassword" id="signup_cpassword" placeholder="{{ translate('Confirm Password') }}" required />
+                                <span class="toggle-password" onclick="togglePasswordVisibility('signup_cpassword')">👁️</span>
                             </div>
                             <button type="submit" class="submit-btn">{{ translate("Sign Up") }}</button>
                         </form>
                         <form class="auth-form" id="forgetpasswordpage">
                             <h3 style="text-align: center;">{{ translate("Reset Password") }}</h3>
                             <div class="form-group full-width">
-                                <input type="text" name="forgetemail" id="forgetemail"
-                                    placeholder="{{ translate('Enter your email or username') }}" required />
+                                <input type="text" name="forgetemail" id="forgetemail" placeholder="{{ translate('Enter your email or username') }}" required />
                             </div>
-                            <button type="button" id="sendForgetOtpBtn" class="submit-btn"
-                                style="margin-bottom: 1rem;">{{
-                                translate("Send OTP") }}</button>
-
+                            <button type="button" id="sendForgetOtpBtn" class="submit-btn" style="margin-bottom: 1rem;">{{ translate("Send OTP") }}</button>
                             <div id="forget-step-2" style="display:none; width: 100%;">
                                 <div class="form-group full-width">
-                                    <input type="number" name="forgetotp" placeholder="{{ translate('Enter OTP') }}"
-                                        oninput="this.value=this.value.slice(0,4)" required />
+                                    <input type="number" name="forgetotp" placeholder="{{ translate('Enter OTP') }}" oninput="this.value=this.value.slice(0,4)" required />
                                 </div>
                                 <div class="form-group">
-                                    <input type="password" name="newpassword" id="newpassword"
-                                        placeholder="{{ translate('New Password') }}" required />
-                                    <span class="toggle-password"
-                                        onclick="togglePasswordVisibility('newpassword')">👁️</span>
+                                    <input type="password" name="newpassword" id="newpassword" placeholder="{{ translate('New Password') }}" required />
+                                    <span class="toggle-password" onclick="togglePasswordVisibility('newpassword')">👁️</span>
                                 </div>
                                 <div class="form-group">
-                                    <input type="password" name="confirmnewpassword" id="confirmnewpassword"
-                                        placeholder="{{ translate('Confirm New Password') }}" required />
-                                    <span class="toggle-password"
-                                        onclick="togglePasswordVisibility('confirmnewpassword')">👁️</span>
+                                    <input type="password" name="confirmnewpassword" id="confirmnewpassword" placeholder="{{ translate('Confirm New Password') }}" required />
+                                    <span class="toggle-password" onclick="togglePasswordVisibility('confirmnewpassword')">👁️</span>
                                 </div>
                                 <button type="submit" class="submit-btn">{{ translate("Reset Password") }}</button>
                             </div>
                             <div class="back-btn-container">
-                                <button type="button" class="read-more-btn" id="backToLoginBtn">{{ translate("Back to
-                                    Login") }}</button>
+                                <button type="button" class="read-more-btn" id="backToLoginBtn">{{ translate("Back to Login") }}</button>
                             </div>
                         </form>
                         {% else %}
                         <div class="profile-card-header">
-                            <img src="https://ui-avatars.com/api/?name={{ c_user }}&background=e07b2a&color=fff&size=128"
-                                class="profile-avatar" alt="avatar">
+                            <img src="https://ui-avatars.com/api/?name={{ c_user }}&background=e07b2a&color=fff&size=128" class="profile-avatar" alt="avatar">
                             <div class="profile-card-header-text">
                                 <h3>{{ translate(fullname, save_file=False) }}</h3>
                                 <span>@{{ c_user }}</span>
@@ -322,49 +266,33 @@
                             </div>
                             {% if userdetails['events'] != None %}
                             <div class="profile-events-row">
-                                <span>{{ translate("Events") }}: <strong>{{ userdetails['events'].split(",") | length }}
-                                        {{ translate("added") }}</strong></span>
-                                <button class="view-events-btn" onclick="viewyourevents('{{ c_user }}')">{{
-                                    translate("View Your Events") }}</button>
+                                <span>{{ translate("Events") }}: <strong>{{ userdetails['events'].split(",") | length }} {{ translate("added") }}</strong></span>
+                                <button class="view-events-btn" onclick="viewyourevents('{{ c_user }}')">{{ translate("View Your Events") }}</button>
                             </div>
                             {% else %}
                             <div class="profile-info-row">
                                 <span class="info-label">{{ translate("Events") }}</span>
-                                <span class="info-value" style="color: var(--text-muted);">{{ translate("No events added
-                                    yet.") }}</span>
+                                <span class="info-value" style="color: var(--text-muted);">{{ translate("No events added yet.") }}</span>
                             </div>
                             {% endif %}
                         </div>
                         <div class="profile-card-footer">
-                            <button onclick="window.location.href='/user/{{ c_user }}'" class="submit-btn">{{
-                                translate("View Profile") }}</button>
-                            <button onclick="window.location.href='/clearsession';" class="delete-btn">{{
-                                translate("Logout") }}</button>
+                            <button onclick="window.location.href='/user/{{ c_user }}'" class="submit-btn">{{ translate("View Profile") }}</button>
+                            <button onclick="window.location.href='/clearsession';" class="delete-btn">{{ translate("Logout") }}</button>
                         </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
+
             {% if isadmin %}
             <div style="margin-top: 3rem;">
                 <h2>🛠️ System Health (Admin)</h2>
                 <div class="dashboard-grid">
-                    <div class="dash-card">
-                        <h3>{{ admin_stats['total_users'] }}</h3>
-                        <p>Total Users</p>
-                    </div>
-                    <div class="dash-card">
-                        <h3>{{ admin_stats['total_events'] }}</h3>
-                        <p>Total Events</p>
-                    </div>
-                    <div class="dash-card">
-                        <h3>{{ admin_stats['pending_requests'] }}</h3>
-                        <p>Pending Requests</p>
-                    </div>
-                    <div class="dash-card">
-                        <h3>{{ admin_stats['active_threads'] }}</h3>
-                        <p>Active Threads</p>
-                    </div>
+                    <div class="dash-card"><h3>{{ admin_stats['total_users'] }}</h3><p>Total Users</p></div>
+                    <div class="dash-card"><h3>{{ admin_stats['total_events'] }}</h3><p>Total Events</p></div>
+                    <div class="dash-card"><h3>{{ admin_stats['pending_requests'] }}</h3><p>Pending Requests</p></div>
+                    <div class="dash-card"><h3>{{ admin_stats['active_threads'] }}</h3><p>Active Threads</p></div>
                 </div>
             </div>
             {% endif %}
@@ -398,8 +326,7 @@
             <div id="pendingContent" style="display: none;"></div>
             {% else %}
             <div style="text-align: center; padding: 3rem;">
-                <p style="color: var(--text-muted); font-size: 1.1rem;">{{ translate("Access denied. Admin privileges
-                    required.") }}</p>
+                <p style="color: var(--text-muted); font-size: 1.1rem;">{{ translate("Access denied. Admin privileges required.") }}</p>
             </div>
             {% endif %}
         </section>
@@ -415,8 +342,7 @@
             <div class="form-container">
                 <h1>{{ translate("Contact Us") }}</h1>
                 <p class="intro">
-                    {{ translate("Have a question, suggestion, or want to collaborate? We'd love to hear from you. Email
-                    us at: ") }} <a href="mailto:hu1243009@sjchs.edu.in">hu1243009@sjchs.edu.in</a></span></a>
+                    {{ translate("Have a question, suggestion, or want to collaborate? We'd love to hear from you. Email us at: ") }} <a href="mailto:hu1243009@sjchs.edu.in">hu1243009@sjchs.edu.in</a>
                 </p>
             </div>
         </section>
@@ -457,6 +383,36 @@
                 langChangeError: "{{ translate('Could not change language right now. Please try again.') }}"
             }
         };
+
+        // ===== LAZY LEADERBOARD =====
+        (function loadLeaderboard() {
+            fetch("/api/leaderboard")
+                .then(r => r.json())
+                .then(data => {
+                    const card = document.getElementById("leaderboard-card");
+                    const list = document.getElementById("leaderboard-list");
+                    if (!list) return;
+                    if (!data || data.length === 0) {
+                        if (card) card.style.display = "none";
+                        return;
+                    }
+                    const medals = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"];
+                    list.innerHTML = data.map((org, i) => `
+                        <li class="leaderboard-item">
+                            <span class="leaderboard-rank">${medals[i] || "#" + (i + 1)}</span>
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(org.username)}&background=random&color=fff&size=128" class="leaderboard-avatar">
+                            <div style="flex-grow:1;">
+                                <div style="font-weight:600;font-size:0.9rem;">${org.name}</div>
+                                <div style="font-size:0.8rem;color:var(--text-muted);">${org.count} Events</div>
+                            </div>
+                        </li>`).join("");
+                })
+                .catch(() => {
+                    const card = document.getElementById("leaderboard-card");
+                    if (card) card.style.display = "none";
+                });
+        })();
+        // ===== END LAZY LEADERBOARD =====
 
         // Quotes Logic
         fetch("/static/quotes.json").then(r => r.json()).then(data => {
@@ -502,7 +458,6 @@
             ]
         });
 
-        /* Global wrappers used by onclick attributes in the page body */
         function hStartTour() { ssTour.start(); }
         function hEndTour() { ssTour.end(); }
         function hNextStep() { ssTour.next(); }
@@ -513,14 +468,9 @@
 
         function updateScrollButtons() {
             if (!scrollTopBtn || !scrollBottomBtn) return;
-
             const scrollY = window.scrollY || document.documentElement.scrollTop;
             const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-
-            // Show top button after scrolling down 200px
             scrollTopBtn.style.display = scrollY > 200 ? "flex" : "none";
-
-            // Show bottom button if there is enough scrollable content AND we are not at the bottom
             if (maxScroll > 100 && scrollY < maxScroll - 100) {
                 scrollBottomBtn.style.display = "flex";
             } else {
@@ -529,26 +479,13 @@
         }
         window.addEventListener("scroll", updateScrollButtons, { passive: true });
         window.addEventListener("resize", updateScrollButtons, { passive: true });
-
         const domObserver = new MutationObserver(updateScrollButtons);
         domObserver.observe(document.body, { childList: true, subtree: true });
-
         setTimeout(updateScrollButtons, 100);
         updateScrollButtons();
 
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-        }
-
-        function scrollToBottom() {
-            window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: "smooth"
-            });
-        }
+        function scrollToTop() { window.scrollTo({ top: 0, behavior: "smooth" }); }
+        function scrollToBottom() { window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }
     </script>
 </body>
 
