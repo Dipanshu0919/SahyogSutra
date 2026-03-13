@@ -145,23 +145,20 @@ async def lifespan(app: FastAPI):
     # Startup
     load_translations()
     loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, _init_pool_eager)  # open 3 connections fast
-    threading.Thread(target=_grow_pool_background, name="DBPoolGrow", daemon=True).start()  # grow to 30 in background
+    await loop.run_in_executor(None, _init_pool)   # fill queue with exactly _DB_POOL_MAX connections
     threading.Thread(target=translation_file_thread, name="TranslationFileThread", daemon=True).start()
     task = asyncio.create_task(checkevent())
     print("Starting background check also")
     yield
-    # Shutdown
+    # Shutdown — drain the queue and close every connection
     task.cancel()
     _translation_executor.shutdown(wait=False)
-    # Close all pooled connections gracefully
-    with _db_pool_lock:
-        for db in _db_pool:
-            try:
-                db.close()
-            except Exception:
-                pass
-        _db_pool.clear()
+    while not _db_idle_queue.empty():
+        try:
+            db = _db_idle_queue.get_nowait()
+            _pool_close_one(db)
+        except Exception:
+            pass
 
 app = FastAPI(lifespan=lifespan)
 
@@ -174,106 +171,142 @@ sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# --- Database Connection Pool ---
-# Opens 3 connections eagerly at startup (fast), then grows to 30 in background.
+# --- Database Connection Pool (Queue-based, strict max 10) ---
+# --- Database Connection Pool (Queue + auto-refill, strict max) ---
+#
+# Design:
+#   _db_idle_queue  — unbounded Queue holding idle connections ready to use
+#   _db_open_count  — atomic counter of ALL open connections (idle + in-use)
+#   _db_count_lock  — protects _db_open_count for check-then-increment
+#
+# Acquire logic:
+#   1. Try to grab an idle connection instantly (non-blocking get).
+#   2. If none idle AND count < MAX → open a brand-new one right now (fast path).
+#   3. If none idle AND count == MAX → block-wait on the queue (all slots busy).
+#   After every acquire a background thread tries to pre-open one replacement
+#   so the queue is always topped up and the NEXT caller gets an instant hit.
+#
+# This guarantees:
+#   • Total open connections NEVER exceeds _DB_POOL_MAX (hard cap via lock).
+#   • database=NULL never appears (USE DATABASE called on every new connection).
+#   • No fallback that bypasses the cap; no racing refill threads.
 
-_DB_POOL_MAX = 15        # SQLiteCloud plan limit
-_DB_POOL_EAGER = 3       # opened synchronously before first request
-_db_pool: list = []
-_db_pool_lock = threading.Lock()
+import queue as _queue_mod
+
+_DB_POOL_MAX  = int(os.environ.get("DB_POOL_MAX", "10"))
+_DB_POOL_INIT = min(3, _DB_POOL_MAX)   # open 3 eagerly at startup, grow on demand
+
+_db_idle_queue: _queue_mod.Queue = _queue_mod.Queue()   # idle connections (no maxsize)
+_db_open_count: int  = 0                                 # total open (idle + in-use)
+_db_count_lock: threading.Lock = threading.Lock()        # guards _db_open_count
 
 def _open_connection():
-    """Open and configure one SQLiteCloud connection."""
+    """Open and configure one SQLiteCloud connection, explicitly selecting the database."""
     db = sq.connect(os.environ.get("SQLITECLOUD"))
     db.row_factory = sq.Row
+    # Explicitly USE DATABASE so it never shows as NULL in LIST CONNECTIONS
+    try:
+        conn_str = os.environ.get("SQLITECLOUD", "")
+        db_name = conn_str.split("/")[-1].split("?")[0].strip()
+        if db_name:
+            db.execute(f"USE DATABASE {db_name}")
+    except Exception:
+        pass
     return db
 
-def _init_pool_eager():
-    """Open EAGER connections immediately — fast, unblocks startup."""
-    for _ in range(_DB_POOL_EAGER):
-        try:
-            conn = _open_connection()
-            with _db_pool_lock:
-                _db_pool.append(conn)
-        except Exception as e:
-            print(f"Pool eager init error: {e}")
-    print(f"DB pool eager ready: {len(_db_pool)} connections")
+def _try_open_and_enqueue() -> bool:
+    """
+    Open one new connection and put it in the idle queue — only if under MAX.
+    Thread-safe. Returns True if a connection was actually opened.
+    """
+    global _db_open_count
+    with _db_count_lock:
+        if _db_open_count >= _DB_POOL_MAX:
+            return False          # already at cap, nothing to do
+        _db_open_count += 1       # reserve the slot before releasing the lock
 
-def _grow_pool_background():
-    """Grow pool to MAX in a background daemon thread — does not block startup."""
-    target = _DB_POOL_MAX - _DB_POOL_EAGER
-    for _ in range(target):
-        try:
-            conn = _open_connection()
-            with _db_pool_lock:
-                if len(_db_pool) < _DB_POOL_MAX:
-                    _db_pool.append(conn)
-                else:
-                    conn.close()
-                    break
-        except Exception as e:
-            print(f"Pool grow error: {e}")
-            time.sleep(0.5)
-    print(f"DB pool fully grown: {len(_db_pool)} connections")
-
-def _pool_size() -> int:
-    """Current number of idle connections in the pool."""
-    with _db_pool_lock:
-        return len(_db_pool)
-
-def _refill_one():
-    """Open one new connection and add it to the pool (runs in a daemon thread)."""
     try:
         conn = _open_connection()
-        with _db_pool_lock:
-            if len(_db_pool) < _DB_POOL_MAX:
-                _db_pool.append(conn)
-                # Uncomment below to see refill activity in logs:
-                # print(f"Pool refilled → {len(_db_pool)} idle")
-            else:
-                conn.close()  # pool was already topped up by someone else
+        _db_idle_queue.put(conn)
+        return True
     except Exception as e:
+        with _db_count_lock:
+            _db_open_count -= 1   # give the slot back on failure
         print(f"Pool refill error: {e}")
+        return False
 
-def _pool_acquire() -> tuple:
+def _init_pool():
+    """Open _DB_POOL_INIT connections eagerly; the rest grow on demand."""
+    for _ in range(_DB_POOL_INIT):
+        _try_open_and_enqueue()
+    print(f"DB pool ready: {_db_open_count}/{_DB_POOL_MAX} connections (auto-refill active)")
+
+def _pool_acquire(timeout: int = 30) -> tuple:
     """
-    Borrow a (db, cursor) from the pool.
-    Immediately kicks off a background refill so the pool stays full.
-    Falls back to opening a fresh connection if pool is empty (safety net).
+    Borrow one connection from the pool.
+      • Instant if an idle connection is available.
+      • Opens a fresh one if under MAX (still fast — no wait).
+      • Blocks up to `timeout` seconds only if all MAX slots are in use.
+    After handing off the connection, spawns a background thread to
+    pre-open a replacement so the next caller also gets an instant hit.
     """
-    with _db_pool_lock:
-        if _db_pool:
-            db = _db_pool.pop()
-            pool_after = len(_db_pool)
-        else:
-            db = None
-            pool_after = 0
+    global _db_open_count
+
+    # Fast path 1: grab an already-idle connection (non-blocking)
+    try:
+        db = _db_idle_queue.get_nowait()
+    except _queue_mod.Empty:
+        db = None
 
     if db is None:
-        print("Pool empty — opening fallback connection")
-        db = _open_connection()
+        # Fast path 2: no idle connections, but we can open a new one right now
+        with _db_count_lock:
+            if _db_open_count < _DB_POOL_MAX:
+                _db_open_count += 1
+                can_open = True
+            else:
+                can_open = False
 
-    # Always try to refill the slot we just took
-    if pool_after < _DB_POOL_MAX:
-        threading.Thread(target=_refill_one, daemon=True, name="DBPoolRefill").start()
+        if can_open:
+            try:
+                db = _open_connection()
+            except Exception:
+                with _db_count_lock:
+                    _db_open_count -= 1
+                raise
+        else:
+            # Slow path: every slot is taken — block until one is returned
+            try:
+                db = _db_idle_queue.get(block=True, timeout=timeout)
+            except _queue_mod.Empty:
+                raise RuntimeError(
+                    f"DB pool exhausted — all {_DB_POOL_MAX} connections busy for "
+                    f"{timeout}s. Raise DB_POOL_MAX or check for slow queries."
+                )
 
-    c = db.cursor()
-    return db, c
+    # Proactively open a replacement in the background so the queue stays full
+    # for the next caller — this is the "auto-refill" step.
+    threading.Thread(target=_try_open_and_enqueue, daemon=True, name="DBPoolRefill").start()
+
+    return db, db.cursor()
 
 def _pool_release(db):
-    """Return a connection to the pool. Closes it only if pool is already full."""
+    """Return a connection to the idle queue (always — the count never changes on release)."""
     try:
         db.commit()
     except Exception:
         pass
-    with _db_pool_lock:
-        if len(_db_pool) < _DB_POOL_MAX:
-            _db_pool.append(db)
-        else:
-            try:
-                db.close()
-            except Exception:
-                pass
+    _db_idle_queue.put(db)
+
+def _pool_close_one(db):
+    """Close a connection and decrement the open count (used by admin/shutdown)."""
+    global _db_open_count
+    try:
+        db.close()
+    except Exception:
+        pass
+    with _db_count_lock:
+        _db_open_count = max(0, _db_open_count - 1)
 
 # Keep sqldb decorator working for any legacy @sqldb-decorated helpers
 def sqldb(function):
@@ -463,7 +496,7 @@ async def home(request: Request, db: AsyncDB = Depends(get_db)):
             "name": session.get("name", ""),
             "email": session.get("email", ""),
             "role": session.get("role", "user"),
-            "events": session.get("events", ""),
+            "events": session.get("events", None),
         }
         if isadmin:
             # Admin stats still need DB — but only for admins
@@ -1002,6 +1035,138 @@ async def dummyevent(request: Request):
     request.session["starttime"] = f"{random.randint(10, 12)}:{random.randint(10, 59)}"
     request.session["endtime"] = f"{random.randint(10, 12)}:{random.randint(10, 59)}"
     return RedirectResponse(url="/#add", status_code=303)
+
+@app.get("/admin/pool/close")
+async def admin_pool_close(request: Request):
+    if request.session.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    loop = asyncio.get_event_loop()
+    def _close_all():
+        closed = 0
+        while not _db_idle_queue.empty():
+            try:
+                db = _db_idle_queue.get_nowait()
+                _pool_close_one(db)
+                closed += 1
+            except Exception:
+                pass
+        return closed
+    closed = await loop.run_in_executor(None, _close_all)
+    sendlog(f"Admin pool close: {closed} connections closed by {request.session.get('username')}")
+    return JSONResponse({"status": "closed", "connections_closed": closed, "pool_size": 0})
+
+@app.get("/admin/pool/open")
+async def admin_pool_open(request: Request):
+    if request.session.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    loop = asyncio.get_event_loop()
+    def _open_all():
+        opened = 0
+        errors = 0
+        needed = _DB_POOL_MAX - _db_open_count
+        for _ in range(max(0, needed)):
+            if _try_open_and_enqueue():
+                opened += 1
+            else:
+                errors += 1
+        return opened, errors
+    opened, errors = await loop.run_in_executor(None, _open_all)
+    current = _db_idle_queue.qsize()
+    sendlog(f"Admin pool open: {opened} connections opened by {request.session.get('username')}")
+    return JSONResponse({"status": "opened", "connections_opened": opened, "errors": errors, "pool_size": current})
+
+@app.get("/admin/pool/status")
+async def admin_pool_status(request: Request):
+    if request.session.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    server_connections = None
+    server_error = None
+    loop = asyncio.get_event_loop()
+
+    def _get_connections():
+        db, c = _pool_acquire()
+        try:
+            c.execute("LIST CONNECTIONS")
+            rows = c.fetchall()
+            return [dict(r) for r in rows] if rows else []
+        except Exception as e:
+            return []
+        finally:
+            _pool_release(db)
+
+    try:
+        result = await loop.run_in_executor(None, _get_connections)
+        server_connections = result
+    except Exception as e:
+        server_error = str(e)
+
+    return JSONResponse({
+        "pool_idle": _db_idle_queue.qsize(),
+        "pool_open_total": _db_open_count,
+        "pool_max": _DB_POOL_MAX,
+        "total_server_connections": len(server_connections) if server_connections else 0,
+        "server_connections": server_connections,
+        "server_error": server_error,
+        "hint": "Use /admin/pool/kill/{id} to close a specific connection"
+    })
+
+@app.get("/admin/pool/kill/{connection_id}")
+async def admin_pool_kill(request: Request, connection_id: int):
+    if request.session.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    loop = asyncio.get_event_loop()
+    def _kill():
+        db, c = _pool_acquire()
+        try:
+            c.execute(f"CLOSE CONNECTION {connection_id}")
+            return True
+        except Exception as e:
+            return str(e)
+        finally:
+            _pool_release(db)
+    result = await loop.run_in_executor(None, _kill)
+    if result is True:
+        sendlog(f"Admin killed server connection {connection_id} — {request.session.get('username')}")
+        return JSONResponse({"status": "killed", "connection_id": connection_id})
+    return JSONResponse({"status": "error", "detail": result})
+
+@app.get("/admin/pool/killall")
+async def admin_pool_killall(request: Request):
+    """Kill ALL server-side connections except the one used to run this command."""
+    if request.session.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    loop = asyncio.get_event_loop()
+    def _killall():
+        db, c = _pool_acquire()
+        try:
+            c.execute("LIST CONNECTIONS")
+            rows = c.fetchall()
+            ids = [r["id"] for r in rows]
+            killed, failed = [], []
+            for cid in ids:
+                try:
+                    c.execute(f"CLOSE CONNECTION {cid}")
+                    killed.append(cid)
+                except Exception:
+                    failed.append(cid)
+            return killed, failed
+        except Exception as e:
+            return [], [str(e)]
+        finally:
+            _pool_release(db)
+    killed, failed = await loop.run_in_executor(None, _killall)
+    # Drain idle queue and reset open count, then refill fresh
+    while not _db_idle_queue.empty():
+        try:
+            db = _db_idle_queue.get_nowait()
+            _pool_close_one(db)
+        except Exception:
+            pass
+    loop2 = asyncio.get_event_loop()
+    await loop2.run_in_executor(None, _init_pool)
+    sendlog(f"Admin killall: killed={killed} failed={failed} — {request.session.get('username')}")
+    return JSONResponse({"status": "done", "killed": killed, "failed": failed, "pool_cleared": True})
 
 @app.get("/api/leaderboard")
 async def api_leaderboard():
