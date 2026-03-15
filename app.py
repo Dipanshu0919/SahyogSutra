@@ -865,7 +865,7 @@ async def show_campaigns(request: Request, db: AsyncDB = Depends(get_db)):
     viewuserevent = request.session.pop("vieweventusername", str(currentuname))
     ve = request.session.pop("viewyourevents", False)
     if viewuserevent == currentuname:
-        await db.execute("SELECT events, role FROM users WHERE username=?", (currentuname,))
+        await db.execute("SELECT events, role FROM userdetails WHERE username=?", (currentuname,))
         fet = await db.fetchone()
         request.session["role"] = str(fet["role"]) or "user"
         try:
