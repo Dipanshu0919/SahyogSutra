@@ -922,6 +922,16 @@
     function vEndTour() { ssEventTour.end(); }
     function vNextStep() { ssEventTour.next(); }
     function vPrevStep() { ssEventTour.prev(); }
+
+    (function () {
+        const tourStatus = localStorage.getItem("eventstourShown");
+        if (tourStatus !== "true") {
+            localStorage.setItem("eventstourShown", "true");
+            // Small delay to let the tour instance and DOM settle after injection
+            setTimeout(vStartTour, 500);
+
+        }
+    })();
   </script>
 
 </body>

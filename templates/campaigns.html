@@ -826,4 +826,14 @@
     function cEndTour() { ssCampaignsTour.end(); }
     function cNextStep() { ssCampaignsTour.next(); }
     function cPrevStep() { ssCampaignsTour.prev(); }
+
+    (function () {
+        const tourStatus = localStorage.getItem("campaignstourShown");
+        if (tourStatus !== "true") {
+            localStorage.setItem("campaignstourShown", "true");
+            // Small delay to let the tour instance and DOM settle after injection
+            setTimeout(cStartTour, 500);
+
+        }
+    })();
 </script>

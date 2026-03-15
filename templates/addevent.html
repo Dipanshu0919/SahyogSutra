@@ -486,7 +486,6 @@
   /* ── Tour: page-specific steps only — engine lives in tour-engine.js ── */
 
   // Clean up previous instance if reloaded
-  // Clean up previous instance if reloaded
   if (window.ssAddTour) {
        try { window.ssAddTour.end(); window.ssAddTour.destroy(); } catch(e) {}
    }
@@ -537,4 +536,13 @@
   function endTour() { ssAddTour.end(); }
   function nextTourStep() { ssAddTour.next(); }
   function prevTourStep() { ssAddTour.prev(); }
+
+  (function () {
+      const tourStatus = localStorage.getItem("addtourShown");
+      if (tourStatus !== "true") {
+          localStorage.setItem("addtourShown", "true");
+          // Small delay to let the tour instance and DOM settle after injection
+          setTimeout(startTour, 500);
+      }
+  })();
 </script>

@@ -486,6 +486,14 @@
 
         function scrollToTop() { window.scrollTo({ top: 0, behavior: "smooth" }); }
         function scrollToBottom() { window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }
+
+        window.addEventListener('load', function () {
+            const tourStatus = localStorage.getItem("homeTourShown");
+            if (tourStatus !== "true") {
+                localStorage.setItem("homeTourShown", "true");
+                setTimeout(hStartTour, 300);
+            }
+        });
     </script>
 </body>
 
