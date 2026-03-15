@@ -111,36 +111,34 @@ async function generateDescription() {
     const formData = new FormData(form);
     const requiredFields = ['eventname', 'location', 'category', 'eventstartdate', 'eventenddate', 'eventstarttime', 'eventendtime'];
     const missing = requiredFields.filter(key => !formData.get(key));
-
     if (missing.length > 0) {
         showAlert(SAHYOG_CONFIG.trans.fillFieldsAI, 'warning');
         return;
     }
-
     const btn = $('#aiBtn');
     const originalText = btn.innerHTML;
     const resultsContainer = $('#aiResults');
     btn.disabled = true;
     btn.innerHTML = `✨ ${SAHYOG_CONFIG.trans.generating}`;
-    resultsContainer.classList.remove('show');
-    resultsContainer.innerHTML = '';
-
     try {
         const response = await fetch('/generate_ai_description', { method: 'POST', body: formData });
+        if (response.status === 429) {
+            const data = await response.json();
+            showAlert(`${SAHYOG_CONFIG.trans.aiFailed} Please wait ${data.wait}s.`, 'warning');
+            return;
+        }
         if (!response.ok) throw new Error('Generation failed');
         const data = await response.json();
-
         const labels = {
             'desc1': SAHYOG_CONFIG.trans.formal,
             'desc2': SAHYOG_CONFIG.trans.informal,
             'desc3': SAHYOG_CONFIG.trans.promotional,
             'desc4': SAHYOG_CONFIG.trans.entertaining
         };
-
         Object.keys(data).forEach(key => {
             const card = document.createElement('div');
             card.className = `ai-option-card ai-card-${key}`;
-            card.innerHTML = `<h5>${labels[key] || key}</h5><p>${data[key]}</p>`;
+            card.innerHTML += `<h5>${labels[key] || key}</h5><p>${data[key]}</p>`;
             card.onclick = () => {
                 $('#descriptionField').value = data[key];
                 showAlert(SAHYOG_CONFIG.trans.descUpdated, 'success');

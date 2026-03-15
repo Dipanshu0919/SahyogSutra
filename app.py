@@ -25,6 +25,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 import socketio
 from dotenv import load_dotenv
 from googletrans import Translator
+from google import genai
 
 # Import modules
 from modules import sendlog, sendmail, sendmailthread, del_event, detailsformat
@@ -40,6 +41,10 @@ active_events = 0
 app_running_port = int(os.environ.get("PORT", 8000))
 app_running_host = "0.0.0.0"
 # hostsite = None
+#
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+
+client = genai.Client(api_key=GOOGLE_API_KEY)
 
 all_translations = {}
 non_file_translations = {}
@@ -94,8 +99,11 @@ def translate_thread(text, lang, save_file):
     global all_translations
     global non_file_translations
     try:
-        t = Translator()
-        translated = t.translate(text, dest=lang).text
+        async def _translate():
+            async with Translator() as t:
+                return await t.translate(text, dest=lang)
+        result = asyncio.run(_translate())
+        translated = result.text
         print(f"Translated '{text}' to '{translated}' in language '{lang}'")
     except Exception as e:
         print(f"Translation error: {e}")
@@ -435,9 +443,11 @@ async def translate_event(request: Request):
     threads = []
 
     def transl(text, lang, key):
-        t = Translator()
-        translated = t.translate(text, dest=lang).text
-        output[key] = translated
+        async def _do():
+            async with Translator() as t:
+                return await t.translate(text, dest=lang)
+        result = asyncio.run(_do())
+        output[key] = result.text
 
     for field, value in data.items():
         threads.append(threading.Thread(target=transl, args=(value, lang, field)))
@@ -475,6 +485,7 @@ async def home(request: Request, db: AsyncDB = Depends(get_db)):
     # if not hostsite:
     #     hostsite = request.base_url
     session = request.session
+    print(session)
     currentuser = session.get("name", "User")
     currentuname = session.get("username")
 
@@ -641,12 +652,58 @@ async def setlanguage(request: Request, lang: str):
     return Response(content="Language Set", media_type="text/plain")
 
 
+# @app.post("/generate_ai_description")
+# async def generate_ai_description(request: Request):
+#     client_ip = request.client.host
+#     allowed, wait = check_rate_limit(client_ip, window=60)
+#     if not allowed:
+#         return Response(content="Please wait a moment before generating again.", media_type="text/plain", status_code=429)
+
+#     try:
+#         form_data = await request.form()
+#         field = ["eventname", "starttime", "endtime", "eventstartdate", "enddate", "location", "category"]
+#         values = [[x, form_data.get(x)] for x in field if form_data.get(x)]
+
+#         content = f"""Generate a description based on following details in pure english language.
+#         Context:
+#         Details of event: {values}
+#         Generate total 4x descriptions (max 500 words each). Include hashtags. Reply strictly in JSON:
+#         {{"desc1": "Formal tone", "desc2": "Informal tone", "desc3": "Promotional tone", "desc4": "Entertaining/Fun tone"}}"""
+
+#         # Use httpx async client instead of blocking requests
+#         async with httpx.AsyncClient(timeout=30.0) as client:
+#             response = await client.post(
+#                 url="https://openrouter.ai/api/v1/chat/completions",
+#                 headers={
+#                     "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
+#                     "Content-Type": "application/json",
+#                 },
+#                 json={
+#                     "model": "nvidia/nemotron-nano-9b-v2:free",
+#                     "messages": [{"role": "user", "content": content}]
+#                 }
+#             )
+
+#         data = response.json()
+#         output = data["choices"][0]["message"]["content"]
+
+#         # Clean up markdown code fences if present
+#         if "```json" in output:
+#             output = output.replace("```json", "").replace("```", "")
+
+#         to_json = json.loads(output.strip())
+#         return JSONResponse(content=to_json)
+
+#     except Exception as e:
+#         print(f"AI Description Generation Error: {e}")
+#         return Response(content="Error generating description. Please try again later.", media_type="text/plain", status_code=500)
+#
 @app.post("/generate_ai_description")
 async def generate_ai_description(request: Request):
     client_ip = request.client.host
     allowed, wait = check_rate_limit(client_ip, window=60)
     if not allowed:
-        return Response(content="Please wait a moment before generating again.", media_type="text/plain", status_code=429)
+        return JSONResponse(content={"wait": wait}, status_code=429)
 
     try:
         form_data = await request.form()
@@ -659,22 +716,11 @@ async def generate_ai_description(request: Request):
         Generate total 4x descriptions (max 500 words each). Include hashtags. Reply strictly in JSON:
         {{"desc1": "Formal tone", "desc2": "Informal tone", "desc3": "Promotional tone", "desc4": "Entertaining/Fun tone"}}"""
 
-        # Use httpx async client instead of blocking requests
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                url="https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {os.environ.get('OPENROUTER_API_KEY')}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": "nvidia/nemotron-nano-9b-v2:free",
-                    "messages": [{"role": "user", "content": content}]
-                }
-            )
+        response = client.models.generate_content(
+            model="gemini-3-flash-preview", contents=content
+        )
 
-        data = response.json()
-        output = data["choices"][0]["message"]["content"]
+        output = response.text
 
         # Clean up markdown code fences if present
         if "```json" in output:
@@ -686,6 +732,7 @@ async def generate_ai_description(request: Request):
     except Exception as e:
         print(f"AI Description Generation Error: {e}")
         return Response(content="Error generating description. Please try again later.", media_type="text/plain", status_code=500)
+
 
 @app.get("/group-chat/from-event/{eventid}")
 async def group_chat_from_event(request: Request, eventid: int, db: AsyncDB = Depends(get_db)):
@@ -876,7 +923,7 @@ async def signup(request: Request, db: AsyncDB = Depends(get_db)):
         request.session["name"] = name
         request.session["email"] = email
         request.session["role"] = "user"
-        request.session["events"] = ""
+        request.session["events"] = None
         request.session.pop("signupotp", None)
         sendlog(f"New Signup: {name} ({username})")
         return Response(content="Signup Success ✅", media_type="text/plain")
@@ -901,7 +948,7 @@ async def login(request: Request, db: AsyncDB = Depends(get_db)):
         request.session["name"] = fetched["name"]
         request.session["email"] = fetched["email"]
         request.session["role"] = fetched["role"] or "user"
-        request.session["events"] = fetched["events"] or ""
+        request.session["events"] = fetched["events"] or None
         sendlog(f"User Login: {fetched['name']} ({fetched['username']})")
         return Response(content="Login Success ✅", media_type="text/plain")
 
