@@ -1,4 +1,5 @@
 import ast
+from ntpath import splitdrive
 import os
 import json
 import random
@@ -775,6 +776,13 @@ async def user_profile(request: Request, username: str, db: AsyncDB = Depends(ge
 
     current_user = request.session.get("username")
     is_own_profile = (current_user == username)
+    if is_own_profile:
+        request.session["role"] = str(userfulldetails["role"]) or "user"
+        try:
+            events = userfulldetails["events"]
+            events = events.split(",")
+            request.session["events"] = len(events)
+        except: request.session["events"] = None
 
     return templates.TemplateResponse(request, "userprofile.html", {
         "userdetails": dict(userfulldetails),
@@ -851,11 +859,21 @@ async def show_campaigns(request: Request, db: AsyncDB = Depends(get_db)):
         "name": request.session.get("name", ""),
         "email": request.session.get("email", ""),
         "role": request.session.get("role", "user"),
-        "events": request.session.get("events", ""),
+        "events": request.session.get("events", None),
     } if currentuname else {}
 
     viewuserevent = request.session.pop("vieweventusername", str(currentuname))
     ve = request.session.pop("viewyourevents", False)
+    if viewuserevent == currentuname:
+        await db.execute("SELECT events, role FROM users WHERE username=?", (currentuname,))
+        fet = await db.fetchone()
+        request.session["role"] = str(fet["role"]) or "user"
+        try:
+            spl = fet["events"].split(",")
+            request.session["events"] = len(spl)
+        except:
+            request.session["events"] = None
+
     sortby = request.session.get("sortby", "eventstartdate")
 
     def bound_translate(text, save_file=True):
@@ -1438,4 +1456,4 @@ app = socketio.ASGIApp(sio, app)
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app:app", host=app_running_host, port=app_running_port, reload=True)
+    uvicorn.run("app:app", host=app_running_host, port=app_running_port, reload=False)
