@@ -266,7 +266,7 @@
                             </div>
                             {% if userdetails['events'] != None %}
                             <div class="profile-events-row">
-                                <span>{{ translate("Events") }}: <strong>{{ userdetails['events'].split(",") | length }} {{ translate("added") }}</strong></span>
+                                <span>{{ translate("Events") }}: <strong>{{ userdetails['events'] }} {{ translate("added") }}</strong></span>
                                 <button class="view-events-btn" onclick="viewyourevents('{{ c_user }}')">{{ translate("View Your Events") }}</button>
                             </div>
                             {% else %}
