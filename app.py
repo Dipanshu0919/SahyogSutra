@@ -12,6 +12,7 @@ import asyncio
 import sqlitecloud as sq
 import csv
 import io
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from functools import wraps
@@ -52,7 +53,7 @@ non_file_translations = {}
 
 # --- In-Memory Stores ---
 rate_limit_store: dict[str, float] = {}  # {ip: timestamp}
-_translation_executor = ThreadPoolExecutor(max_workers=50)
+_translation_executor = ThreadPoolExecutor(max_workers=10)
 
 # --- Campaigns Cache ---
 _campaigns_cache: dict = {"data": None, "ts": 0}
@@ -78,8 +79,12 @@ def load_translations():
 def save_translations():
     global all_translations
     try:
-        with open("translations.json", "w", encoding="utf-8") as f:
+        tmp = "translations.json.tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(all_translations, f, indent=4, ensure_ascii=False)
+        os.replace(tmp, "translations.json")
+        import shutil
+        shutil.copy2("translations.json", "translations_backup.json")
     except Exception as e:
         print(f"Error saving translation file: {e}")
         sendlog(f"Error saving translation file: {e}")
@@ -90,11 +95,7 @@ def translation_file_thread():
         time.sleep(60)
         with translations_lock:
             save_translations()
-            try:
-                with open("translations_backup.json", "w", encoding="utf-8") as f:
-                    json.dump(all_translations, f, indent=4, ensure_ascii=False)
-            except Exception:
-                pass
+
 
 def translate_thread(text, lang, save_file):
     global all_translations
@@ -147,6 +148,14 @@ def check_rate_limit(ip: str, window: int = 30) -> tuple[bool, int]:
     rate_limit_store[ip] = now
     return True, 0
 
+def _prune_rate_limit_store():
+    while True:
+        time.sleep(300)  # every 5 minutes
+        now = time.time()
+        expired = [k for k, v in list(rate_limit_store.items()) if now - v > 120]
+        for k in expired:
+            del rate_limit_store[k]
+
 # --- FastAPI Setup ---
 
 @asynccontextmanager
@@ -156,6 +165,7 @@ async def lifespan(app: FastAPI):
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, _init_pool)   # fill queue with exactly _DB_POOL_MAX connections
     threading.Thread(target=translation_file_thread, name="TranslationFileThread", daemon=True).start()
+    threading.Thread(target=_prune_rate_limit_store, daemon=True, name="RateLimitPruner").start()
     task = asyncio.create_task(checkevent())
     print("Starting background check also")
     yield
@@ -1401,7 +1411,7 @@ async def add_group_msg(sid, data):
             c.execute("UPDATE messages2 SET msgs=(?) WHERE eventid=(?)", (str(msg), eventid))
             db.commit()
         finally:
-            db.close()
+            close_db(db)
 
     await loop.run_in_executor(None, _insert)
     await sio.emit("new_message", {
@@ -1441,7 +1451,7 @@ async def add_like(sid, data):
             print(f"Like update: ID = {eventid}, Likes: {new_likes_val}, Type = {like_type}")
             return new_likes_val
         finally:
-            db.close()
+            close_db(db)
 
     # Run DB update in executor thread and capture the returned like count
     new_likes = await loop.run_in_executor(None, _update_like)
@@ -1455,5 +1465,5 @@ app = socketio.ASGIApp(sio, app)
 
 if __name__ == "__main__":
     import uvicorn
-
+    print(sys.getsizeof(_translation_executor))
     uvicorn.run("app:app", host=app_running_host, port=app_running_port, reload=False)
