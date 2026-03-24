@@ -487,6 +487,8 @@
         function scrollToTop() { window.scrollTo({ top: 0, behavior: "smooth" }); }
         function scrollToBottom() { window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }
 
+        {% if not is_preview %}
+
         window.addEventListener('load', function () {
             const tourStatus = localStorage.getItem("homeTourShown");
             if (tourStatus !== "true") {
@@ -494,6 +496,8 @@
                 setTimeout(hStartTour, 300);
             }
         });
+
+        {% endif %}
     </script>
 </body>
 

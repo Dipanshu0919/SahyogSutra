@@ -553,7 +553,8 @@ async def home(request: Request, preview: bool = False, db: AsyncDB = Depends(ge
         "user_language": user_lang,
         "fvalues": {},
         "top_organizers": top_organizers,
-        "admin_stats": admin_stats
+        "admin_stats": admin_stats,
+        "is_preview": preview
     })
 
 @app.get("/event/{eventid}")
