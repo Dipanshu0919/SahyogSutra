@@ -491,7 +491,7 @@ async def internal_exception_handler(request, exc):
 # --- Routes ---
 
 @app.get("/")
-async def home(request: Request, db: AsyncDB = Depends(get_db)):
+async def home(request: Request, preview: bool = False, db: AsyncDB = Depends(get_db)):
     # global hostsite
     # if not hostsite:
     #     hostsite = request.base_url
@@ -500,7 +500,7 @@ async def home(request: Request, db: AsyncDB = Depends(get_db)):
     currentuser = session.get("name", "User")
     currentuname = session.get("username")
 
-    if not session.get("lang"):
+    if not session.get("lang") and not preview:
         return templates.TemplateResponse(request, "selectlanguage.html")
 
     global active_events
@@ -1465,5 +1465,4 @@ app = socketio.ASGIApp(sio, app)
 
 if __name__ == "__main__":
     import uvicorn
-    print(sys.getsizeof(_translation_executor))
     uvicorn.run("app:app", host=app_running_host, port=app_running_port, reload=False)
